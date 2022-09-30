@@ -14,9 +14,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.function.BooleanSupplier;
 
 import static pipeline.ExecutionManager.executorService;
 import static util.FileManagement.makeSureFileExists;
@@ -118,15 +118,15 @@ public abstract class ExecutableStep implements EventListener {
             if (!dependencyManager.waitForExecution()) {
                 return false;
             }
-            
-            logger.info("Fetching suppliers.");
-            Set<BooleanSupplier> suppliers = getSuppliers();
 
-            if (suppliers == null || suppliers.size() == 0) {
-                logger.error("No suppliers found");
+            logger.info("Fetching callables.");
+            Set<Callable<Boolean>> callables = getCallables();
+
+            if (callables == null || callables.size() == 0) {
+                logger.error("No callables found");
                 return false;
             } else {
-                logger.info("Found " + suppliers.size() + " supplier(s).");
+                logger.info("Found " + callables.size() + " supplier(s).");
             }
 
             logger.debug("Execution starting.");
@@ -139,7 +139,7 @@ public abstract class ExecutableStep implements EventListener {
             if (!verifyHash()) {
                 logger.debug("Hash is invalid.");
 
-                successful = suppliers.stream().map(supplier -> executorService.submit(supplier::getAsBoolean)).allMatch(future -> {
+                successful = callables.stream().map(executorService::submit).allMatch(future -> {
                     try {
                         return future.get();
                     } catch (InterruptedException | ExecutionException e) {
@@ -368,5 +368,5 @@ public abstract class ExecutableStep implements EventListener {
      * process into multiple executableSteps should be considered. If this is not an option, the
      * finishAllQueuedThreads() method should be used in order to make sure that the previous sub job is finished.
      */
-    protected abstract Set<BooleanSupplier> getSuppliers();
+    protected abstract Set<Callable<Boolean>> getCallables();
 }
