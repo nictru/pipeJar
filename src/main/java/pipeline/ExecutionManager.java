@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
 
@@ -78,10 +79,10 @@ public class ExecutionManager {
         return sortedSteps;
     }
 
-    private boolean waitForAll(Function<ExecutableStep, Boolean> function, String name) {
+    private boolean waitForAll(Function<ExecutableStep, Future<Boolean>> function, String name) {
         logger.info("Waiting for " + name + " results...");
 
-        boolean allGood = steps.stream().map(step -> executorService.submit(() -> function.apply(step))).allMatch(future -> {
+        boolean allGood = steps.parallelStream().map(function).allMatch(future -> {
             try {
                 return future.get();
             } catch (InterruptedException | ExecutionException e) {

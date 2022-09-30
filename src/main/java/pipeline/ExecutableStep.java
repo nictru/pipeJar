@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.BooleanSupplier;
 
 import static pipeline.ExecutionManager.executorService;
@@ -53,7 +54,9 @@ public abstract class ExecutableStep implements EventListener {
      * The logger of this ExecutableStep.
      */
     protected final Logger logger = LogManager.getLogger(this.getClass());
-    private final Collection<ExecutableStep> dependencies;
+    private final DependencyManager dependencyManager;
+
+    private Future<Boolean> simulationFuture, executionFuture;
 
     protected ExecutableStep(ExecutableStep... dependencies) {
         this(List.of(dependencies));
@@ -64,11 +67,19 @@ public abstract class ExecutableStep implements EventListener {
     }
 
     private ExecutableStep(Collection<ExecutableStep> dependencies) {
-        this.dependencies = dependencies;
+        this.dependencyManager = new DependencyManager(dependencies, logger);
+    }
+
+    public Future<Boolean> getSimulationFuture() {
+        return simulationFuture;
+    }
+
+    public Future<Boolean> getExecutionFuture() {
+        return executionFuture;
     }
 
     public Collection<ExecutableStep> getDependencies() {
-        return dependencies;
+        return dependencyManager.dependencies();
     }
 
 
@@ -78,15 +89,22 @@ public abstract class ExecutableStep implements EventListener {
      *
      * @return true if the simulation was successful, otherwise false.
      */
-    boolean simulate() {
-        logger.debug("Simulation starting.");
+    Future<Boolean> simulate() {
+        simulationFuture = executorService.submit(() -> {
+            if (!dependencyManager.waitForSimulation()) {
+                return false;
+            }
 
-        if (checkRequirements()) {
-            logger.debug("Simulation successful.");
-            return true;
-        } else {
-            return false;
-        }
+            logger.debug("Simulation starting.");
+
+            if (checkRequirements()) {
+                logger.debug("Simulation successful.");
+                return true;
+            } else {
+                return false;
+            }
+        });
+        return simulationFuture;
     }
 
     /**
@@ -95,43 +113,50 @@ public abstract class ExecutableStep implements EventListener {
      * Skips the executableStep if developmentMode is not active and valid hashes are found.
      * Stores new hashes if the executableStep has been executed and developmentMode is disabled.
      */
-    boolean execute() {
-        logger.info("Fetching suppliers.");
-        Set<BooleanSupplier> suppliers = getSuppliers();
+    Future<Boolean> execute() {
+        executionFuture = executorService.submit(() -> {
+            if (!dependencyManager.waitForExecution()) {
+                return false;
+            }
+            
+            logger.info("Fetching suppliers.");
+            Set<BooleanSupplier> suppliers = getSuppliers();
 
-        if (suppliers == null || suppliers.size() == 0) {
-            logger.error("No suppliers found");
-            return false;
-        } else {
-            logger.info("Found " + suppliers.size() + " supplier(s).");
-        }
+            if (suppliers == null || suppliers.size() == 0) {
+                logger.error("No suppliers found");
+                return false;
+            } else {
+                logger.info("Found " + suppliers.size() + " supplier(s).");
+            }
 
-        logger.debug("Execution starting.");
+            logger.debug("Execution starting.");
 
-        ExecutionTimeMeasurement timer = new ExecutionTimeMeasurement();
+            ExecutionTimeMeasurement timer = new ExecutionTimeMeasurement();
 
-        boolean successful;
+            boolean successful;
 
-        logger.debug("Verifying hash...");
-        if (!verifyHash()) {
-            logger.debug("Hash is invalid.");
+            logger.debug("Verifying hash...");
+            if (!verifyHash()) {
+                logger.debug("Hash is invalid.");
 
-            successful = suppliers.stream().map(supplier -> executorService.submit(supplier::getAsBoolean)).allMatch(future -> {
-                try {
-                    return future.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    return false;
-                }
-            });
-            logger.debug("Writing hash");
-        } else {
-            successful = true;
-            logger.debug("Skipped execution since hash is valid.");
-        }
+                successful = suppliers.stream().map(supplier -> executorService.submit(supplier::getAsBoolean)).allMatch(future -> {
+                    try {
+                        return future.get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        return false;
+                    }
+                });
+                logger.debug("Writing hash");
+            } else {
+                successful = true;
+                logger.debug("Skipped execution since hash is valid.");
+            }
 
-        logger.info("Finished. Step took " + timer.stopAndGetDeltaFormatted());
+            logger.info("Finished. Step took " + timer.stopAndGetDeltaFormatted());
 
-        return successful;
+            return successful;
+        });
+        return executionFuture;
     }
 
     /**
@@ -334,25 +359,6 @@ public abstract class ExecutableStep implements EventListener {
      */
     private File getHashFile() {
         return new File(this.getClass().getName() + ".md5");
-    }
-
-
-    /**
-     * Get the minutes that the executorService may take for completing all tasks.
-     *
-     * @return 5 if not overridden
-     */
-    protected int getShutDownTimeOutMinutes() {
-        return 5;
-    }
-
-    /**
-     * Get the number of threads for this ExecutableStep instance.
-     *
-     * @return configs->general->threadLimit if not overridden
-     */
-    protected int getMemoryEstimationMb() {
-        return 1;
     }
 
     /**

@@ -10,8 +10,8 @@ import java.util.function.BooleanSupplier;
 public class SecondStep extends ExecutableStep {
     public RequiredConfig<Boolean> req = new RequiredConfig<>(Main.ConfigModules.testModule.secondConfig);
 
-    public SecondStep(ExecutableStep first) {
-        super(first);
+    public SecondStep(ExecutableStep... dependencies) {
+        super(dependencies);
     }
 
     @Override
