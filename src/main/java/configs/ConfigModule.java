@@ -13,9 +13,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static pipeline.ExecutionManager.getDevelopmentMode;
-import static pipeline.ExecutionManager.registerCreatedFileStructure;
-
 /**
  * Abstract base class for config modules.
  * <p>
@@ -181,10 +178,6 @@ public abstract class ConfigModule {
 
             if (thisValid && config.isSet() && config.get().getClass().equals(File.class)) {
                 InputConfig<File> fileConfig = (InputConfig<File>) config;
-
-                if (fileConfig.get().exists() && getDevelopmentMode()) {
-                    registerCreatedFileStructure(fileConfig);
-                }
             }
         }
         return subModulesValid && configsValid;

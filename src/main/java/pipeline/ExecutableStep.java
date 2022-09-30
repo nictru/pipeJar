@@ -15,10 +15,9 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.function.BooleanSupplier;
 
-import static pipeline.ExecutionManager.*;
+import static pipeline.ExecutionManager.executorService;
 import static util.FileManagement.makeSureFileExists;
 import static util.FileManagement.readLines;
 import static util.Hashing.hashFiles;
@@ -49,14 +48,12 @@ import static util.Hashing.hashFiles;
  *     the real execution requirements and outputs as exact as possible.</li>
  * </ul>
  */
-public abstract class ExecutableStep {
+public abstract class ExecutableStep implements EventListener {
     /**
      * The logger of this ExecutableStep.
      */
     protected final Logger logger = LogManager.getLogger(this.getClass());
-    private final Future<Boolean> simulationFuture, runFuture;
-    private final DependencyManager dependencyManager;
-    private String noExecutionReason = null;
+    private final Collection<ExecutableStep> dependencies;
 
     protected ExecutableStep(ExecutableStep... dependencies) {
         this(List.of(dependencies));
@@ -67,18 +64,13 @@ public abstract class ExecutableStep {
     }
 
     private ExecutableStep(Collection<ExecutableStep> dependencies) {
-        dependencyManager = new DependencyManager(logger, dependencies);
-        simulationFuture = executorService.submit(this::simulate);
-        runFuture = executorService.submit(this::execute);
+        this.dependencies = dependencies;
     }
 
-    public Future<Boolean> getSimulationFuture() {
-        return simulationFuture;
+    public Collection<ExecutableStep> getDependencies() {
+        return dependencies;
     }
 
-    public Future<Boolean> getExecutionFuture() {
-        return runFuture;
-    }
 
     /**
      * Check if all the requirements of this executableStep are met and broadcast the created file structures. Does
@@ -86,15 +78,8 @@ public abstract class ExecutableStep {
      *
      * @return true if the simulation was successful, otherwise false.
      */
-    private boolean simulate() {
-        boolean dependencyResults = dependencyManager.waitForSimulations();
-
-        if (!dependencyResults) {
-            logger.warn("Simulation not started because simulation of dependency failed");
-            return false;
-        } else {
-            logger.debug("Simulation starting.");
-        }
+    boolean simulate() {
+        logger.debug("Simulation starting.");
 
         if (checkRequirements()) {
             logger.debug("Simulation successful.");
@@ -110,7 +95,7 @@ public abstract class ExecutableStep {
      * Skips the executableStep if developmentMode is not active and valid hashes are found.
      * Stores new hashes if the executableStep has been executed and developmentMode is disabled.
      */
-    private boolean execute() {
+    boolean execute() {
         logger.info("Fetching suppliers.");
         Set<BooleanSupplier> suppliers = getSuppliers();
 
@@ -121,14 +106,7 @@ public abstract class ExecutableStep {
             logger.info("Found " + suppliers.size() + " supplier(s).");
         }
 
-        boolean dependencyResults = dependencyManager.waitForExecution();
-
-        if (!dependencyResults) {
-            logger.warn("Execution not started because execution of dependency failed");
-            return false;
-        } else {
-            logger.debug("Execution starting.");
-        }
+        logger.debug("Execution starting.");
 
         ExecutionTimeMeasurement timer = new ExecutionTimeMeasurement();
 
@@ -373,10 +351,6 @@ public abstract class ExecutableStep {
      *
      * @return configs->general->threadLimit if not overridden
      */
-    protected int getThreadNumber() {
-        return Math.min(getThreadLimit(), getMemoryLimitMb() / getMemoryEstimationMb());
-    }
-
     protected int getMemoryEstimationMb() {
         return 1;
     }
@@ -389,12 +363,4 @@ public abstract class ExecutableStep {
      * finishAllQueuedThreads() method should be used in order to make sure that the previous sub job is finished.
      */
     protected abstract Set<BooleanSupplier> getSuppliers();
-
-    public String getNoExecutionReason() {
-        return noExecutionReason;
-    }
-
-    public void setNoExecutionReason(String noExecutionReason) {
-        this.noExecutionReason = noExecutionReason;
-    }
 }
