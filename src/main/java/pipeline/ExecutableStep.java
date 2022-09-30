@@ -13,15 +13,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.function.BooleanSupplier;
 
-import static pipeline.ExecutionManager.getMemoryLimitMb;
-import static pipeline.ExecutionManager.getThreadLimit;
+import static pipeline.ExecutionManager.*;
 import static util.FileManagement.makeSureFileExists;
 import static util.FileManagement.readLines;
 import static util.Hashing.hashFiles;
@@ -53,19 +50,35 @@ import static util.Hashing.hashFiles;
  * </ul>
  */
 public abstract class ExecutableStep {
-    boolean developmentMode = true;
-    /**
-     * Allows multithreading with a defined number of threads.
-     * The thread number can be set by overriding the {@link #getThreadNumber} method.
-     */
-    protected ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(getThreadNumber());
-
     /**
      * The logger of this ExecutableStep.
      */
     protected final Logger logger = LogManager.getLogger(this.getClass());
-
+    private final Future<Boolean> simulationFuture, runFuture;
+    private final DependencyManager dependencyManager;
     private String noExecutionReason = null;
+
+    protected ExecutableStep(ExecutableStep... dependencies) {
+        this(List.of(dependencies));
+    }
+
+    protected ExecutableStep() {
+        this(new HashSet<>());
+    }
+
+    private ExecutableStep(Collection<ExecutableStep> dependencies) {
+        dependencyManager = new DependencyManager(logger, dependencies);
+        simulationFuture = executorService.submit(this::simulate);
+        runFuture = executorService.submit(this::execute);
+    }
+
+    public Future<Boolean> getSimulationFuture() {
+        return simulationFuture;
+    }
+
+    public Future<Boolean> getExecutionFuture() {
+        return runFuture;
+    }
 
     /**
      * Check if all the requirements of this executableStep are met and broadcast the created file structures. Does
@@ -73,9 +86,15 @@ public abstract class ExecutableStep {
      *
      * @return true if the simulation was successful, otherwise false.
      */
-    public boolean simulate() {
-        logger.debug("Simulation starting.");
-        updateInputDirectory();
+    private boolean simulate() {
+        boolean dependencyResults = dependencyManager.waitForSimulations();
+
+        if (!dependencyResults) {
+            logger.warn("Simulation not started because simulation of dependency failed");
+            return false;
+        } else {
+            logger.debug("Simulation starting.");
+        }
 
         if (checkRequirements()) {
             logger.debug("Simulation successful.");
@@ -91,31 +110,50 @@ public abstract class ExecutableStep {
      * Skips the executableStep if developmentMode is not active and valid hashes are found.
      * Stores new hashes if the executableStep has been executed and developmentMode is disabled.
      */
-    public void run() {
-        ExecutionTimeMeasurement timer = new ExecutionTimeMeasurement();
-        logger.info("Starting.");
-        boolean executed;
-        if (!developmentMode) {
-            logger.debug("Verifying hash...");
-            if (!verifyHash()) {
-                logger.debug("Hash is invalid.");
-                execute();
-                executed = true;
-            } else {
-                logger.debug("Skipped execution since hash is valid.");
-                executed = false;
-            }
-        } else {
-            execute();
-            executed = true;
-        }
-        shutdown();
+    private boolean execute() {
+        logger.info("Fetching suppliers.");
+        Set<BooleanSupplier> suppliers = getSuppliers();
 
-        if (executed && !developmentMode) {
-            logger.debug("Writing hash");
-            createHash();
+        if (suppliers == null || suppliers.size() == 0) {
+            logger.error("No suppliers found");
+            return false;
+        } else {
+            logger.info("Found " + suppliers.size() + " supplier(s).");
         }
+
+        boolean dependencyResults = dependencyManager.waitForExecution();
+
+        if (!dependencyResults) {
+            logger.warn("Execution not started because execution of dependency failed");
+            return false;
+        } else {
+            logger.debug("Execution starting.");
+        }
+
+        ExecutionTimeMeasurement timer = new ExecutionTimeMeasurement();
+
+        boolean successful;
+
+        logger.debug("Verifying hash...");
+        if (!verifyHash()) {
+            logger.debug("Hash is invalid.");
+
+            successful = suppliers.stream().map(supplier -> executorService.submit(supplier::getAsBoolean)).allMatch(future -> {
+                try {
+                    return future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    return false;
+                }
+            });
+            logger.debug("Writing hash");
+        } else {
+            successful = true;
+            logger.debug("Skipped execution since hash is valid.");
+        }
+
         logger.info("Finished. Step took " + timer.stopAndGetDeltaFormatted());
+
+        return successful;
     }
 
     /**
@@ -166,14 +204,6 @@ public abstract class ExecutableStep {
         }
         return configs;
     }
-
-    /**
-     * Update input directories if the input directory depends on configs.
-     * This is necessary for the first steps of the pipeline, e.g. checkChromosomeAnnotation, MixOptions, ...
-     */
-    protected void updateInputDirectory() {
-    }
-
 
     /**
      * Check if the file structure and config requirements of this executableStep are met.
@@ -328,60 +358,6 @@ public abstract class ExecutableStep {
         return new File(this.getClass().getName() + ".md5");
     }
 
-    /**
-     * Wait for all queued threads in the executorService to terminate.
-     * Includes a progress and remaining time estimation.
-     * TODO: Implement timout monitoring
-     */
-    protected void shutdown() {
-        long total = executorService.getTaskCount();
-        if (total > 0) {
-            ExecutionTimeMeasurement timer = new ExecutionTimeMeasurement();
-
-            executorService.shutdown();
-            int timeOutMinutes = getShutDownTimeOutMinutes();
-
-            long lastFinished = 0;
-            Long latestTotalTimeGuessMillis = null;
-
-            while (!executorService.isTerminated()) {
-                long finished = executorService.getCompletedTaskCount();
-                long passedTime = timer.getDeltaMillis();
-
-                if (finished > lastFinished) {
-                    long millisPerStep = passedTime / finished;
-                    latestTotalTimeGuessMillis = millisPerStep * total;
-
-                    lastFinished = finished;
-                }
-
-                double percentage = 100 * (double) finished / total;
-                String message = String.format("Progress: %.2f%%", percentage);
-
-                if (lastFinished > 0) {
-                    long remainingMillis = Math.max(latestTotalTimeGuessMillis - passedTime, 0);
-                    message += ", ETR: " + ExecutionTimeMeasurement.formatMillis(remainingMillis);
-                }
-
-                logger.info(message);
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
-                }
-            }
-            timer.stop();
-        }
-    }
-
-    /**
-     * Wait for all queued threads to terminate and reinitialize the executorService.
-     */
-    protected void finishAllQueuedThreads() {
-        shutdown();
-        executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(getThreadLimit());
-    }
-
 
     /**
      * Get the minutes that the executorService may take for completing all tasks.
@@ -412,13 +388,13 @@ public abstract class ExecutableStep {
      * process into multiple executableSteps should be considered. If this is not an option, the
      * finishAllQueuedThreads() method should be used in order to make sure that the previous sub job is finished.
      */
-    protected abstract void execute();
-
-    public void setNoExecutionReason(String noExecutionReason) {
-        this.noExecutionReason = noExecutionReason;
-    }
+    protected abstract Set<BooleanSupplier> getSuppliers();
 
     public String getNoExecutionReason() {
         return noExecutionReason;
+    }
+
+    public void setNoExecutionReason(String noExecutionReason) {
+        this.noExecutionReason = noExecutionReason;
     }
 }

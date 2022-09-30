@@ -88,7 +88,7 @@ public abstract class ConfigModuleCollection {
      * @return the json string
      */
     public String toString() {
-        return getConfigsJSONString(false);
+        return getConfigsJSONString(true);
     }
 
     /**

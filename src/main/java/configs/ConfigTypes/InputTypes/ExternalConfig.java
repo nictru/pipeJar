@@ -8,21 +8,14 @@ import org.json.JSONObject;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class SettableConfig<T> extends InputConfig<T> {
+public class ExternalConfig<T> extends InputConfig<T> {
+    private final Class<?> configClass;
     Set<Validator<T>> validators = new HashSet<>();
 
-    private final Class<?> configClass;
-
     @SafeVarargs
-    public SettableConfig(Class<? extends T> configClass, Validator<T>... validators) {
+    public ExternalConfig(Class<? extends T> configClass, Validator<T>... validators) {
         this.configClass = configClass;
         this.validators.addAll(List.of(validators));
-    }
-
-    @SafeVarargs
-    public SettableConfig(T value, Validator<T>... validators) {
-        this((Class<? extends T>) value.getClass(), validators);
-        setValue(value);
     }
 
     @Override
