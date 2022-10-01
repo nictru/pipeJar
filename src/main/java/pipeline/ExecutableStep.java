@@ -145,7 +145,7 @@ public abstract class ExecutableStep implements EventListener {
             }
 
             logger.info("Fetching callables.");
-            Set<Callable<Boolean>> callables = getCallables();
+            Collection<Callable<Boolean>> callables = getCallables();
 
             if (callables == null || callables.size() == 0) {
                 logger.error("No callables found");
@@ -158,7 +158,7 @@ public abstract class ExecutableStep implements EventListener {
 
             boolean successful;
 
-            if (!hashManager.validateHashes(getConfigs())) {
+            if (!mayBeSkipped() || !hashManager.validateHashes(getConfigs())) {
                 logger.debug("Execution starting.");
 
                 successful = callables.stream().map(ExecutionManager::submitPerformanceTask).allMatch(future -> {
@@ -170,7 +170,9 @@ public abstract class ExecutableStep implements EventListener {
                     }
                 });
 
-                hashManager.writeHashes(getConfigs());
+                if (mayBeSkipped()) {
+                    hashManager.writeHashes(getConfigs());
+                }
             } else {
                 successful = true;
                 logger.debug("Skipped execution since hash is valid.");
@@ -237,7 +239,7 @@ public abstract class ExecutableStep implements EventListener {
      * process into multiple executableSteps should be considered. If this is not an option, the
      * finishAllQueuedThreads() method should be used in order to make sure that the previous sub job is finished.
      */
-    protected abstract Set<Callable<Boolean>> getCallables();
+    protected abstract Collection<Callable<Boolean>> getCallables();
 
     protected InputFile input(OutputFile outputFile) {
         InputFile inputFile = new InputFile(inputDirectory, outputFile);
@@ -249,5 +251,9 @@ public abstract class ExecutableStep implements EventListener {
         }
 
         return inputFile;
+    }
+
+    protected boolean mayBeSkipped() {
+        return true;
     }
 }

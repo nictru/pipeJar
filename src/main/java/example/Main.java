@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        ExecutionManager.setThreadNumber(1);
+        ExecutionManager.setThreadNumber(10);
         ExecutionManager.workingDirectory = new OutputFile("/home/nico/Data/PipeJar");
 
         ConfigModules modules = new ConfigModules();
@@ -18,8 +18,9 @@ public class Main {
 
         FirstStep first = new FirstStep();
         SecondStep second = new SecondStep(first);
+        ThirdStep third = new ThirdStep();
 
-        ExecutionManager manager = new ExecutionManager(first, second);
+        ExecutionManager manager = new ExecutionManager(first, second, third);
         manager.run();
     }
 

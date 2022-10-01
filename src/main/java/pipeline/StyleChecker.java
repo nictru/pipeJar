@@ -46,7 +46,8 @@ public class StyleChecker {
                 }
                 int modifier = field.getModifiers();
                 if (!Modifier.isPrivate(modifier) || !Modifier.isFinal(modifier)) {
-                    logger.warn("InputFile \"" + field.getName() + "\" in " + step.getClass().getName() + " should be private and final.");
+                    logger.warn("InputFile \"" + field.getName() + "\" in " + step.getClass().getName() +
+                            " must be private and final.");
                     return false;
                 }
                 return true;
@@ -58,7 +59,8 @@ public class StyleChecker {
                 }
                 int modifier = field.getModifiers();
                 if (!Modifier.isPublic(modifier) || !Modifier.isFinal(modifier)) {
-                    logger.warn(field.getClass().getSimpleName() + " \"" + field.getName() + "\" in " + step.getClass().getName() + " should be public and final.");
+                    logger.warn(field.getClass().getSimpleName() + " \"" + field.getName() + "\" in " +
+                            step.getClass().getName() + " must be public and final.");
                     return false;
                 }
                 return true;
@@ -70,13 +72,15 @@ public class StyleChecker {
                 }
                 int modifier = field.getModifiers();
                 if (!Modifier.isPublic(modifier) || Modifier.isFinal(modifier)) {
-                    logger.warn("OutputFile \"" + field.getName() + "\" in " + step.getClass().getName() + " should be public and must not be final.");
+                    logger.warn("OutputFile \"" + field.getName() + "\" in " + step.getClass().getName() +
+                            " must be public and must not be final.");
                     return false;
                 }
                 try {
                     OutputFile outputFile = (OutputFile) field.get(step);
                     if (!outputFile.getAbsolutePath().startsWith(step.getWorkingDirectory().getAbsolutePath())) {
-                        logger.warn("\"updateOutputFiles()\" has not been called in constructor of " + step.getClass().getName());
+                        logger.warn("\"updateOutputFiles()\" has not been called in constructor of " +
+                                step.getClass().getName());
                         return false;
                     }
                 } catch (IllegalAccessException e) {
@@ -87,7 +91,8 @@ public class StyleChecker {
             });
             // Field type
             add(field -> {
-                Set<Class<?>> allowedTypes = new HashSet<>(List.of(OptionalConfig.class, RequiredConfig.class, InputFile.class, OutputFile.class));
+                Set<Class<?>> allowedTypes = new HashSet<>(
+                        List.of(OptionalConfig.class, RequiredConfig.class, InputFile.class, OutputFile.class));
                 if (!allowedTypes.contains(field.getType())) {
                     logger.warn("Field \"" + field.getName() + "\" in " + step.getClass().getName() +
                             " has a forbidden type: " + field.getType().getName() + ". Allowed types are: " +
@@ -98,7 +103,7 @@ public class StyleChecker {
             });
         }};
 
-        return Arrays.stream(step.getClass().getDeclaredFields()).allMatch(field ->
-                checks.stream().allMatch(fieldBooleanFunction -> fieldBooleanFunction.apply(field)));
+        return Arrays.stream(step.getClass().getDeclaredFields()).allMatch(
+                field -> checks.stream().allMatch(fieldBooleanFunction -> fieldBooleanFunction.apply(field)));
     }
 }
