@@ -26,6 +26,7 @@ public record DependencyManager(Collection<ExecutableStep> dependencies, Logger 
             try {
                 return future.get();
             } catch (InterruptedException | ExecutionException e) {
+                logger.warn(e.getMessage());
                 return false;
             }
         });

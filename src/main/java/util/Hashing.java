@@ -1,6 +1,5 @@
 package util;
 
-import configs.ConfigTypes.Config;
 import util.Comparators.FileComparator;
 
 import java.io.*;
@@ -8,28 +7,16 @@ import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Vector;
 
 public class Hashing {
     public static String hash(String text) {
         MessageDigest digest = getMessageDigest();
         byte[] hashBytes = digest.digest(text.getBytes(StandardCharsets.UTF_8));
         return bytesToString(hashBytes);
-    }
-
-    private static String hashHashes(List<String> hashes) {
-        return hash(String.join("", hashes));
-    }
-
-    public static String hashConfigs(Iterable<? extends Config<?>> configs) {
-        ArrayList<String> hashes = new ArrayList<>();
-
-        for (Config<?> config : configs) {
-            String hash = hash(config.toString());
-            hashes.add(hash);
-        }
-        Collections.sort(hashes);
-        return hashHashes(hashes);
     }
 
     public static String hashFiles(List<File> files) throws IOException {
@@ -55,7 +42,7 @@ public class Hashing {
         return bytesToString(md.digest());
     }
 
-    private static void collectInputStreams(File file, List<FileInputStream> foundStreams, boolean includeHiddenFiles)
+    private static void collectInputStreams(File file, Collection<FileInputStream> foundStreams, boolean includeHiddenFiles)
             throws FileNotFoundException {
 
 

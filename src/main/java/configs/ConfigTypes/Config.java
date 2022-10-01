@@ -10,4 +10,9 @@ public abstract class Config<T> {
     public abstract String getName();
 
     public abstract T get();
+
+    @Override
+    public String toString() {
+        return String.valueOf(get());
+    }
 }

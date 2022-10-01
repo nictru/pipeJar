@@ -259,4 +259,16 @@ public class FileManagement {
             Files.delete(file.toPath());
         }
     }
+
+    public static boolean recreateDirectory(File file) throws IOException {
+        if (!file.isDirectory()) {
+            throw new IllegalArgumentException("Cannot handle files. Only directories allowed!");
+        }
+
+        if (file.exists()) {
+            deleteFileStructure(file);
+        }
+
+        return file.mkdir();
+    }
 }
