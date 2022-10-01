@@ -12,8 +12,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 public class FirstStep extends ExecutableStep {
-    public RequiredConfig<Integer> test = new RequiredConfig<>(Main.ConfigModules.testModule.testConfig);
-    public OptionalConfig<Integer> optional = new OptionalConfig<>(Main.ConfigModules.testModule.optionalConfig, test.get() > 3);
+    public final RequiredConfig<Integer> test = new RequiredConfig<>(Main.ConfigModules.testModule.testConfig);
+    public final OptionalConfig<Integer> optional = new OptionalConfig<>(Main.ConfigModules.testModule.optionalConfig, test.get() > 3);
 
     public OutputFile created = new OutputFile("output.txt");
 

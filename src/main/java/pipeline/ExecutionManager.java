@@ -1,38 +1,49 @@
 package pipeline;
 
 import configs.ConfigTypes.FileTypes.OutputFile;
-import configs.ConfigTypes.InputTypes.InputConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 import java.util.function.Function;
 
 public class ExecutionManager {
-    final static ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
     public static OutputFile workingDirectory;
+
+    private static Integer threadNumber;
+    private static ThreadPoolExecutor executorService;
     private final Logger logger = LogManager.getLogger(ExecutionManager.class);
     private final List<ExecutableStep> steps;
-    private Set<InputConfig<File>> createdFiles = new HashSet<>();
 
     public ExecutionManager(ExecutableStep... steps) {
         this.steps = sortSteps(new HashSet<>(List.of(steps)));
+        if (new StyleChecker().check(this.steps)) {
+            logger.info("Style checks finished successfully.");
+        } else {
+            logger.error("Style checks finished with problems.");
+            System.exit(0);
+        }
     }
 
-    public Set<InputConfig<File>> getRegisteredFileStructure() {
-        return createdFiles;
+    public static Integer getThreadNumber() {
+        return threadNumber;
     }
 
-    public void registerCreatedFileStructure(InputConfig<File> file) {
-        createdFiles.add(file);
+    public static void setThreadNumber(int nThreads) {
+        if (threadNumber != null) {
+            System.out.println("Thread number has already been set!");
+            return;
+        }
+        threadNumber = nThreads;
+        executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads);
+    }
+
+    static Future<Boolean> submit(Callable<Boolean> callable) {
+        return executorService.submit(callable);
     }
 
     public void run() {
@@ -42,14 +53,13 @@ public class ExecutionManager {
         shutdown();
     }
 
-    public boolean execute() {
-        return waitForAll(ExecutableStep::execute, "Execution");
+    public void execute() {
+        waitForAll(ExecutableStep::execute, "Execution");
     }
 
     public boolean simulate() {
         return waitForAll(ExecutableStep::simulate, "Simulation");
     }
-
 
     public void shutdown() {
         executorService.shutdown();

@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 public class SecondStep extends ExecutableStep {
+    public final RequiredConfig<Boolean> req = new RequiredConfig<>(Main.ConfigModules.testModule.secondConfig);
     private final InputFile firstFile;
-    public RequiredConfig<Boolean> req = new RequiredConfig<>(Main.ConfigModules.testModule.secondConfig);
 
     public SecondStep(FirstStep first) {
         super(first);

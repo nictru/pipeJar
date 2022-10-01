@@ -34,7 +34,6 @@ public class HashManager {
     private String readHash(File hashFile) {
         if (hashFile.exists() && hashFile.canRead()) {
             try {
-                logger.debug("Reading hash from " + hashFile);
                 return FileManagement.readFile(hashFile);
             } catch (IOException e) {
                 logger.warn("Could not read hash file: " + hashFile.getAbsolutePath());
@@ -50,7 +49,7 @@ public class HashManager {
     }
 
     void writeHashes(Collection<UsageConfig> configs, Collection<? extends File> inputFiles) throws IOException {
-        logger.debug("Writing hashes to " + configHashFile + " and " + inputHashFile);
+        logger.debug("Writing hashes.");
 
         FileManagement.writeFile(configHashFile, hashConfigs(configs));
         FileManagement.writeFile(inputHashFile, hashFiles(inputFiles));

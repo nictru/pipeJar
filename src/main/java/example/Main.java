@@ -9,6 +9,7 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
+        ExecutionManager.setThreadNumber(1);
         ExecutionManager.workingDirectory = new OutputFile("/home/nico/Data/PipeJar");
 
         ConfigModules modules = new ConfigModules();

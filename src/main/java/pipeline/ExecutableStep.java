@@ -15,7 +15,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static pipeline.ExecutionManager.executorService;
 import static util.FileManagement.deleteFileStructure;
 import static util.FileManagement.makeSureDirectoryExists;
 
@@ -85,12 +84,12 @@ public abstract class ExecutableStep implements EventListener {
      * @return true if the simulation was successful, otherwise false.
      */
     Future<Boolean> simulate() {
-        simulationFuture = executorService.submit(() -> {
+        simulationFuture = ExecutionManager.submit(() -> {
             if (!dependencyManager.waitForSimulation()) {
                 return false;
             }
 
-            logger.debug("Simulation starting.");
+            logger.trace("Simulation starting.");
 
             if (checkRequirements()) {
                 logger.debug("Simulation successful.");
@@ -124,6 +123,10 @@ public abstract class ExecutableStep implements EventListener {
         });
     }
 
+    public OutputFile getWorkingDirectory() {
+        return workingDirectory;
+    }
+
     /**
      * Wraps the executableStep execution with some framework checks.
      * <p>
@@ -131,7 +134,7 @@ public abstract class ExecutableStep implements EventListener {
      * Stores new hashes if the executableStep has been executed and developmentMode is disabled.
      */
     Future<Boolean> execute() {
-        executionFuture = executorService.submit(() -> {
+        executionFuture = ExecutionManager.submit(() -> {
             if (!dependencyManager.waitForExecution()) {
                 return false;
             }
@@ -143,19 +146,17 @@ public abstract class ExecutableStep implements EventListener {
                 logger.error("No callables found");
                 return false;
             } else {
-                logger.info("Found " + callables.size() + " supplier(s).");
+                logger.info("Found " + callables.size() + " callable(s).");
             }
-
-            logger.debug("Execution starting.");
 
             ExecutionTimeMeasurement timer = new ExecutionTimeMeasurement();
 
             boolean successful;
 
             if (!hashManager.validateHashes(getConfigs(), getInputFiles())) {
-                logger.debug("Hash is invalid.");
+                logger.debug("Execution starting.");
 
-                successful = callables.stream().map(executorService::submit).allMatch(future -> {
+                successful = callables.stream().map(ExecutionManager::submit).allMatch(future -> {
                     try {
                         return future.get();
                     } catch (InterruptedException | ExecutionException e) {
