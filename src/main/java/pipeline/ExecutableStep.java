@@ -1,5 +1,7 @@
 package pipeline;
 
+import configs.ConfigTypes.FileTypes.InputFile;
+import configs.ConfigTypes.FileTypes.OutputFile;
 import configs.ConfigTypes.InputTypes.InputConfig;
 import configs.ConfigTypes.UsageTypes.OptionalConfig;
 import configs.ConfigTypes.UsageTypes.RequiredConfig;
@@ -7,10 +9,9 @@ import configs.ConfigTypes.UsageTypes.UsageConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import util.ExecutionTimeMeasurement;
+import util.FileManagement;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -19,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static pipeline.ExecutionManager.executorService;
-import static util.FileManagement.makeSureFileExists;
+import static util.FileManagement.deleteFileStructure;
 import static util.FileManagement.readLines;
 import static util.Hashing.hashFiles;
 
@@ -55,19 +56,48 @@ public abstract class ExecutableStep implements EventListener {
      */
     protected final Logger logger = LogManager.getLogger(this.getClass());
     private final DependencyManager dependencyManager;
-
+    private final OutputFile workingDirectory;
     private Future<Boolean> simulationFuture, executionFuture;
 
     protected ExecutableStep(ExecutableStep... dependencies) {
-        this(List.of(dependencies));
+        this.dependencyManager = new DependencyManager(List.of(dependencies), logger);
+        workingDirectory = new OutputFile(ExecutionManager.workingDirectory, this.getClass().getName().replace(".", "_"));
+
+        if (workingDirectory.exists()) {
+            logger.info("Deleting working directory");
+            try {
+                deleteFileStructure(workingDirectory);
+            } catch (IOException e) {
+                logger.error("Could not delete old working directory.");
+            }
+        }
+
+        if (!workingDirectory.mkdir()) {
+            logger.error("Could not create working directory");
+        }
     }
 
-    protected ExecutableStep() {
-        this(new HashSet<>());
+    protected void updateOutputFiles() {
+        try {
+            for (Field outputFileField : getOutputFileFields()) {
+                String old = outputFileField.get(this).toString();
+                outputFileField.set(this, new OutputFile(workingDirectory, old));
+            }
+        } catch (IllegalAccessException e) {
+            logger.error("Illegal access: " + e.getMessage());
+        }
     }
 
-    private ExecutableStep(Collection<ExecutableStep> dependencies) {
-        this.dependencyManager = new DependencyManager(dependencies, logger);
+    private Collection<Field> getOutputFileFields() {
+        Set<Field> outputFiles = new HashSet<>();
+
+        for (Field field : this.getClass().getDeclaredFields()) {
+            if (field.getType().equals(OutputFile.class)) {
+                outputFiles.add(field);
+            }
+        }
+
+        return outputFiles;
     }
 
     public Future<Boolean> getSimulationFuture() {
@@ -99,12 +129,31 @@ public abstract class ExecutableStep implements EventListener {
 
             if (checkRequirements()) {
                 logger.debug("Simulation successful.");
-                return true;
+                return createFiles();
             } else {
                 return false;
             }
         });
         return simulationFuture;
+    }
+
+    private boolean createFiles() {
+        logger.debug("Creating output files.");
+
+        return getOutputFileFields().stream().map(field -> {
+            try {
+                return (OutputFile) field.get(this);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Illegal access: " + e.getMessage());
+            }
+        }).allMatch(outputFile -> {
+            try {
+                return outputFile.createNewFile();
+            } catch (IOException e) {
+                logger.warn("Could not create file: " + e.getMessage());
+            }
+            return false;
+        });
     }
 
     /**
@@ -143,6 +192,7 @@ public abstract class ExecutableStep implements EventListener {
                     try {
                         return future.get();
                     } catch (InterruptedException | ExecutionException e) {
+                        logger.warn(e.getMessage());
                         return false;
                     }
                 });
@@ -294,7 +344,6 @@ public abstract class ExecutableStep implements EventListener {
             String oldInputHash = content.get(0);
             String oldRequiredConfigHash = content.get(1);
             String oldOptionalConfigHash = content.get(2);
-            String oldOutputHash = content.get(3);
 
             String inputHash = hashInputs();
             if (!inputHash.equals(oldInputHash)) {
@@ -322,37 +371,6 @@ public abstract class ExecutableStep implements EventListener {
     }
 
     /**
-     * Calculate the hashes for all used configs and store them in the hash file.
-     * <p>
-     * Hashed config types:
-     * <ul>
-     *     <li>Input file structures</li>
-     *     <li>Output file structures</li>
-     *     <li>Required configs</li>
-     *     <li>Optional configs</li>
-     * </ul>
-     */
-    public void createHash() {
-        try {
-            String inputHash = hashInputs();
-            String requiredConfigHash = hashRequiredConfigs();
-            String optionalConfigHash = hashOptionalConfigs();
-
-            File hashFile = getHashFile();
-            makeSureFileExists(hashFile);
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(hashFile))) {
-                writer.write(inputHash);
-                writer.newLine();
-                writer.write(requiredConfigHash);
-                writer.newLine();
-                writer.write(optionalConfigHash);
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    /**
      * Get the hash file for this executableStep.
      *
      * @return the hash file
@@ -369,4 +387,15 @@ public abstract class ExecutableStep implements EventListener {
      * finishAllQueuedThreads() method should be used in order to make sure that the previous sub job is finished.
      */
     protected abstract Set<Callable<Boolean>> getCallables();
+
+    protected InputFile input(OutputFile outputFile) {
+        InputFile inputFile = new InputFile(workingDirectory, outputFile);
+        try {
+            FileManagement.softLink(inputFile, outputFile);
+        } catch (IOException e) {
+            logger.warn("Could not creat soft link: " + e.getMessage());
+        }
+
+        return inputFile;
+    }
 }

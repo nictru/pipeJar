@@ -1,5 +1,6 @@
 package pipeline;
 
+import configs.ConfigTypes.FileTypes.OutputFile;
 import configs.ConfigTypes.InputTypes.InputConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,6 +18,7 @@ import java.util.function.Function;
 
 public class ExecutionManager {
     final static ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+    public static OutputFile workingDirectory;
     private final Logger logger = LogManager.getLogger(ExecutionManager.class);
     private final List<ExecutableStep> steps;
     private Set<InputConfig<File>> createdFiles = new HashSet<>();

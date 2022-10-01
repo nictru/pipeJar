@@ -1,7 +1,7 @@
 package example;
 
 import configs.ConfigModuleCollection;
-import pipeline.ExecutableStep;
+import configs.ConfigTypes.FileTypes.OutputFile;
 import pipeline.ExecutionManager;
 
 import java.io.File;
@@ -9,12 +9,14 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
+        ExecutionManager.workingDirectory = new OutputFile("/home/nico/Data/PipeJar");
+
         ConfigModules modules = new ConfigModules();
 
         modules.merge(new File("/home/nico/Software/pipeJar/src/main/resources/configs.json"));
 
-        ExecutableStep first = new FirstStep();
-        ExecutableStep second = new SecondStep(first);
+        FirstStep first = new FirstStep();
+        SecondStep second = new SecondStep(first);
 
         ExecutionManager manager = new ExecutionManager(first, second);
         manager.run();

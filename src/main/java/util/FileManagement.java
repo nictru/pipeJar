@@ -1,6 +1,5 @@
 package util;
 
-import org.apache.logging.log4j.Logger;
 import util.FileFilters.Filters;
 
 import java.io.File;
@@ -19,14 +18,6 @@ import java.util.concurrent.TimeUnit;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class FileManagement {
-    public static String readFile(File file, Logger logger) {
-        try {
-            return readFile(file);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
-    }
 
     public static String readFile(File file) throws IOException {
         return Files.readString(file.toPath());
@@ -45,13 +36,6 @@ public class FileManagement {
         copyFile(source, target, false);
     }
 
-    public static void copyFile(File source, File target, Logger logger) {
-        try {
-            copyFile(source, target);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
 
     public static void copyFile(File source, File target, boolean compression) throws IOException {
         if (target.exists()) {
@@ -138,14 +122,6 @@ public class FileManagement {
         writeFile(file, content);
     }
 
-    public static void writeFile(File file, String content, Logger logger) {
-        try {
-            writeFile(file, content);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
     public static void writeFile(File file, String content) throws IOException {
         makeSureFileExists(file);
         if (file.isFile()) {
@@ -211,13 +187,6 @@ public class FileManagement {
         }
     }
 
-    public static void makeSureFileExists(File file, Logger logger) {
-        try {
-            makeSureFileExists(file);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
 
     public static synchronized void makeSureDirectoryExists(File directory) throws IOException {
         if (directory.isFile()) {
@@ -230,13 +199,6 @@ public class FileManagement {
         }
     }
 
-    public static void makeSureDirectoryExists(File directory, Logger logger) {
-        try {
-            makeSureDirectoryExists(directory);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
 
     public static void appendToFile(File file, String content) throws IOException {
         makeSureFileExists(file);
@@ -271,13 +233,6 @@ public class FileManagement {
         Files.createLink(newLink.toPath(), existingData.toPath());
     }
 
-    public static void hardLink(File newLink, File existingData, Logger logger) {
-        try {
-            hardLink(newLink, existingData);
-        } catch (IOException e) {
-            logger.error("Error during hardLink creation: " + e.getMessage());
-        }
-    }
 
     public static void softLink(File newLink, File existingData) throws IOException {
         makeSureDirectoryExists(newLink.getParentFile());
@@ -288,21 +243,6 @@ public class FileManagement {
         Files.createSymbolicLink(newLink.toPath(), existingData.toPath());
     }
 
-    public static void softLink(File newLink, File existingData, Logger logger) {
-        try {
-            softLink(newLink, existingData);
-        } catch (IOException e) {
-            logger.error("Error during softLink creation: " + e.getMessage());
-        }
-    }
-
-    public static void deleteFileStructure(File file, Logger logger) {
-        try {
-            deleteFileStructure(file);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
 
     public static void deleteFileStructure(File file) throws IOException {
         if (Files.isSymbolicLink(file.toPath())) {

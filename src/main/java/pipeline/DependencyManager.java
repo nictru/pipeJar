@@ -31,7 +31,7 @@ public record DependencyManager(Collection<ExecutableStep> dependencies, Logger 
         });
 
         if (result) {
-            logger.debug("All dependencies finished their " + process + "successfully.");
+            logger.debug("All dependencies finished their " + process + " successfully.");
         } else {
             logger.warn("There were problems with " + process + " dependencies.");
         }
