@@ -24,28 +24,33 @@ public abstract class ExecutableStep implements EventListener {
      */
     protected final Logger logger = LogManager.getLogger(this.getClass());
     private final DependencyManager dependencyManager;
-    private final OutputFile workingDirectory;
+    private final OutputFile workingDirectory, inputDirectory, outputDirectory;
     private final HashManager hashManager;
     private Future<Boolean> simulationFuture, executionFuture;
 
     protected ExecutableStep(ExecutableStep... dependencies) {
-        workingDirectory = new OutputFile(ExecutionManager.workingDirectory, this.getClass().getName().replace(".", "_"));
+        workingDirectory =
+                new OutputFile(ExecutionManager.workingDirectory, this.getClass().getName().replace(".", "_"));
+        inputDirectory = new OutputFile(workingDirectory, "input");
+        outputDirectory = new OutputFile(workingDirectory, "output");
 
         try {
             makeSureDirectoryExists(workingDirectory);
+            makeSureDirectoryExists(inputDirectory);
+            makeSureDirectoryExists(outputDirectory);
         } catch (IOException e) {
             logger.warn("Could not create working directory: " + e.getMessage());
         }
 
         dependencyManager = new DependencyManager(List.of(dependencies), logger);
-        hashManager = new HashManager(workingDirectory, logger);
+        hashManager = new HashManager(workingDirectory, logger, inputDirectory, outputDirectory);
     }
 
     protected void updateOutputFiles() {
         try {
             for (Field outputFileField : getOutputFileFields()) {
                 String old = outputFileField.get(this).toString();
-                outputFileField.set(this, new OutputFile(workingDirectory, old));
+                outputFileField.set(this, new OutputFile(outputDirectory, old));
             }
         } catch (IllegalAccessException e) {
             logger.error("Illegal access: " + e.getMessage());
@@ -153,7 +158,7 @@ public abstract class ExecutableStep implements EventListener {
 
             boolean successful;
 
-            if (!hashManager.validateHashes(getConfigs(), getInputFiles())) {
+            if (!hashManager.validateHashes(getConfigs())) {
                 logger.debug("Execution starting.");
 
                 successful = callables.stream().map(ExecutionManager::submitPerformanceTask).allMatch(future -> {
@@ -165,7 +170,7 @@ public abstract class ExecutableStep implements EventListener {
                     }
                 });
 
-                hashManager.writeHashes(getConfigs(), getInputFiles());
+                hashManager.writeHashes(getConfigs());
             } else {
                 successful = true;
                 logger.debug("Skipped execution since hash is valid.");
@@ -184,13 +189,15 @@ public abstract class ExecutableStep implements EventListener {
      *
      * @return a set of the optional configs, must not be null.
      */
-    private <T> Collection<T> getFieldObjects(Class<T> clazz) {
-        Collection<T> configs = new HashSet<>();
+
+
+    private Collection<UsageConfig<?>> getConfigs() {
+        Collection<UsageConfig<?>> configs = new HashSet<>();
         for (Field field : this.getClass().getDeclaredFields()) {
 
-            if (field.getType().getSuperclass().equals(clazz)) {
+            if (field.getType().getSuperclass().equals(UsageConfig.class)) {
                 try {
-                    configs.add((T) field.get(this));
+                    configs.add((UsageConfig<?>) field.get(this));
                 } catch (IllegalAccessException e) {
                     logger.error(e.getMessage());
                 }
@@ -199,13 +206,6 @@ public abstract class ExecutableStep implements EventListener {
         return configs;
     }
 
-    private Collection<UsageConfig> getConfigs() {
-        return getFieldObjects(UsageConfig.class);
-    }
-
-    private Collection<InputFile> getInputFiles() {
-        return getFieldObjects(InputFile.class);
-    }
 
     /**
      * Check if the file structure and config requirements of this executableStep are met.
@@ -240,7 +240,7 @@ public abstract class ExecutableStep implements EventListener {
     protected abstract Set<Callable<Boolean>> getCallables();
 
     protected InputFile input(OutputFile outputFile) {
-        InputFile inputFile = new InputFile(workingDirectory, outputFile);
+        InputFile inputFile = new InputFile(inputDirectory, outputFile);
         try {
             deleteFileStructure(inputFile);
             FileManagement.softLink(inputFile, outputFile);

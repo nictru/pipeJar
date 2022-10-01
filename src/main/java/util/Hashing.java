@@ -19,12 +19,21 @@ public class Hashing {
         return bytesToString(hashBytes);
     }
 
+    public static String hashDirectory(File directory) throws IOException {
+        if (!directory.exists() || !directory.isDirectory()) {
+            throw new IllegalArgumentException("Can only work with existing directories.");
+        }
+        return hashFiles(List.of(directory));
+    }
+
     public static String hashFiles(List<File> files) throws IOException {
         return hashFiles(true, files);
     }
 
     public static String hashFiles(boolean includeHiddenFiles, List<File> files) throws IOException {
-        files.sort(new FileComparator());
+        if (files.size() > 1) {
+            files.sort(new FileComparator());
+        }
         Vector<FileInputStream> fileStreams = new Vector<>();
 
         for (File file : files) {
@@ -42,10 +51,9 @@ public class Hashing {
         return bytesToString(md.digest());
     }
 
-    private static void collectInputStreams(File file, Collection<FileInputStream> foundStreams, boolean includeHiddenFiles)
-            throws FileNotFoundException {
-
-
+    private static void collectInputStreams(File file, Collection<FileInputStream> foundStreams,
+                                            boolean includeHiddenFiles) throws FileNotFoundException {
+        
         if (file.isFile() && (includeHiddenFiles || !file.isHidden())) {
             foundStreams.add(new FileInputStream(file));
         } else if (file.isDirectory()) {
