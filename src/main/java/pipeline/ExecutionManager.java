@@ -12,10 +12,10 @@ import java.util.concurrent.*;
 import java.util.function.Function;
 
 public class ExecutionManager {
+    private static final ExecutorService chillPool = Executors.newCachedThreadPool();
     public static OutputFile workingDirectory;
-
     private static Integer threadNumber;
-    private static ThreadPoolExecutor executorService;
+    private static ExecutorService performancePool;
     private final Logger logger = LogManager.getLogger(ExecutionManager.class);
     private final List<ExecutableStep> steps;
 
@@ -39,11 +39,15 @@ public class ExecutionManager {
             return;
         }
         threadNumber = nThreads;
-        executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads);
+        performancePool = Executors.newFixedThreadPool(nThreads);
     }
 
-    static Future<Boolean> submit(Callable<Boolean> callable) {
-        return executorService.submit(callable);
+    static Future<Boolean> submitPerformanceTask(Callable<Boolean> callable) {
+        return performancePool.submit(callable);
+    }
+
+    static Future<Boolean> submitEasyTask(Callable<Boolean> callable) {
+        return chillPool.submit(callable);
     }
 
     public void run() {
@@ -62,7 +66,8 @@ public class ExecutionManager {
     }
 
     public void shutdown() {
-        executorService.shutdown();
+        performancePool.shutdown();
+        chillPool.shutdown();
     }
 
     private List<ExecutableStep> sortSteps(Set<ExecutableStep> unsortedSteps) {
@@ -87,6 +92,8 @@ public class ExecutionManager {
                 throw new IllegalArgumentException("Could not define execution order. Steps that could not be placed: " + unsortedSteps);
             }
         }
+
+        logger.info("Defined execution order: " + sortedSteps.stream().map(step -> step.getClass().getName()).toList());
 
         return sortedSteps;
     }

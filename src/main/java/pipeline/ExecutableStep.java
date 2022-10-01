@@ -84,7 +84,7 @@ public abstract class ExecutableStep implements EventListener {
      * @return true if the simulation was successful, otherwise false.
      */
     Future<Boolean> simulate() {
-        simulationFuture = ExecutionManager.submit(() -> {
+        simulationFuture = ExecutionManager.submitEasyTask(() -> {
             if (!dependencyManager.waitForSimulation()) {
                 return false;
             }
@@ -134,7 +134,7 @@ public abstract class ExecutableStep implements EventListener {
      * Stores new hashes if the executableStep has been executed and developmentMode is disabled.
      */
     Future<Boolean> execute() {
-        executionFuture = ExecutionManager.submit(() -> {
+        executionFuture = ExecutionManager.submitEasyTask(() -> {
             if (!dependencyManager.waitForExecution()) {
                 return false;
             }
@@ -156,7 +156,7 @@ public abstract class ExecutableStep implements EventListener {
             if (!hashManager.validateHashes(getConfigs(), getInputFiles())) {
                 logger.debug("Execution starting.");
 
-                successful = callables.stream().map(ExecutionManager::submit).allMatch(future -> {
+                successful = callables.stream().map(ExecutionManager::submitPerformanceTask).allMatch(future -> {
                     try {
                         return future.get();
                     } catch (InterruptedException | ExecutionException e) {
