@@ -38,6 +38,10 @@ public class ExecutionManager {
             System.out.println("Thread number has already been set!");
             return;
         }
+        if (nThreads < 1) {
+            System.out.println("Thread number has to be at least 1");
+            System.exit(1);
+        }
         threadNumber = nThreads;
         performancePool = Executors.newFixedThreadPool(nThreads);
     }
@@ -89,7 +93,8 @@ public class ExecutionManager {
 
             if (freshAddedSteps.isEmpty()) {
                 logger.error("Could not define execution order.");
-                throw new IllegalArgumentException("Could not define execution order. Steps that could not be placed: " + unsortedSteps);
+                throw new IllegalArgumentException(
+                        "Could not define execution order. Steps that could not be placed: " + unsortedSteps);
             }
         }
 
@@ -111,8 +116,9 @@ public class ExecutionManager {
 
         if (!allGood) {
             logger.error(name + " failed.");
-        } else
+        } else {
             logger.info(name + " finished successfully.");
+        }
 
         return allGood;
     }
