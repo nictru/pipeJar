@@ -4,10 +4,9 @@ import configs.ConfigTypes.FileTypes.OutputFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
@@ -16,18 +15,19 @@ public class ExecutionManager {
     public static OutputFile workingDirectory;
     private static Integer threadNumber;
     private static ExecutorService performancePool;
-    private static boolean skippingEnabled = true;
+    private static boolean hashingEnabled = true;
     private final Logger logger = LogManager.getLogger(ExecutionManager.class);
-    private final List<ExecutableStep> steps;
+    private final Collection<ExecutableStep> steps;
 
     public ExecutionManager(ExecutableStep... steps) {
-        this.steps = sortSteps(new HashSet<>(List.of(steps)));
+        this.steps = new HashSet<>(List.of(steps));
         if (new StyleChecker().check(this.steps)) {
             logger.info("Style checks finished successfully.");
         } else {
             logger.error("Style checks finished with problems.");
             System.exit(0);
         }
+        this.steps.forEach(step -> step.getOutputs().forEach(OutputFile::register));
     }
 
     public static Integer getThreadNumber() {
@@ -55,12 +55,12 @@ public class ExecutionManager {
         return chillPool.submit(callable);
     }
 
-    public static void disableSkipping() {
-        skippingEnabled = false;
+    public static void disableHashing() {
+        hashingEnabled = false;
     }
 
-    static boolean isSkippingEnabled() {
-        return skippingEnabled;
+    static boolean isHashingEnabled() {
+        return hashingEnabled;
     }
 
     public void run() {
@@ -83,35 +83,6 @@ public class ExecutionManager {
         chillPool.shutdown();
     }
 
-    private List<ExecutableStep> sortSteps(Set<ExecutableStep> unsortedSteps) {
-        HashSet<ExecutableStep> addedSteps = new HashSet<>();
-        List<ExecutableStep> sortedSteps = new ArrayList<>();
-
-        while (unsortedSteps.size() > 0) {
-            HashSet<ExecutableStep> freshAddedSteps = new HashSet<>();
-
-            for (ExecutableStep step : unsortedSteps) {
-                if (addedSteps.containsAll(step.getDependencies())) {
-                    freshAddedSteps.add(step);
-                    addedSteps.add(step);
-                    sortedSteps.add(step);
-                }
-            }
-
-            freshAddedSteps.forEach(unsortedSteps::remove);
-
-            if (freshAddedSteps.isEmpty()) {
-                logger.error("Could not define execution order.");
-                throw new IllegalArgumentException(
-                        "Could not define execution order. Steps that could not be placed: " + unsortedSteps);
-            }
-        }
-
-        logger.info("Defined execution order: " + sortedSteps.stream().map(step -> step.getClass().getName()).toList());
-
-        return sortedSteps;
-    }
-
     private boolean waitForAll(Function<ExecutableStep, Future<Boolean>> function, String name) {
         logger.info("Waiting for " + name + " results...");
 
@@ -119,6 +90,8 @@ public class ExecutionManager {
             try {
                 return future.get();
             } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
                 return false;
             }
         });

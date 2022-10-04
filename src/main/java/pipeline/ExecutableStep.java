@@ -26,9 +26,10 @@ public abstract class ExecutableStep implements EventListener {
     private final DependencyManager dependencyManager;
     private final OutputFile workingDirectory, inputDirectory, outputDirectory;
     private final HashManager hashManager;
-    private Future<Boolean> simulationFuture, executionFuture;
 
-    protected ExecutableStep(ExecutableStep... dependencies) {
+    private final Collection<OutputFile> outputs = new HashSet<>();
+
+    protected ExecutableStep(OutputFile... dependencies) {
         workingDirectory =
                 new OutputFile(ExecutionManager.workingDirectory, this.getClass().getName().replace(".", "_"));
         inputDirectory = new OutputFile(workingDirectory, "input");
@@ -46,15 +47,8 @@ public abstract class ExecutableStep implements EventListener {
         hashManager = new HashManager(workingDirectory, logger, inputDirectory, outputDirectory);
     }
 
-    protected void updateOutputFiles() {
-        try {
-            for (Field outputFileField : getOutputFileFields()) {
-                String old = outputFileField.get(this).toString();
-                outputFileField.set(this, new OutputFile(outputDirectory, old));
-            }
-        } catch (IllegalAccessException e) {
-            logger.error("Illegal access: " + e.getMessage());
-        }
+    Collection<OutputFile> getOutputs() {
+        return outputs;
     }
 
     private Collection<Field> getOutputFileFields() {
@@ -69,18 +63,6 @@ public abstract class ExecutableStep implements EventListener {
         return outputFiles;
     }
 
-    public Future<Boolean> getSimulationFuture() {
-        return simulationFuture;
-    }
-
-    public Future<Boolean> getExecutionFuture() {
-        return executionFuture;
-    }
-
-    public Collection<ExecutableStep> getDependencies() {
-        return dependencyManager.dependencies();
-    }
-
 
     /**
      * Check if all the requirements of this executableStep are met and broadcast the created file structures. Does
@@ -89,7 +71,7 @@ public abstract class ExecutableStep implements EventListener {
      * @return true if the simulation was successful, otherwise false.
      */
     Future<Boolean> simulate() {
-        simulationFuture = ExecutionManager.submitEasyTask(() -> {
+        return ExecutionManager.submitEasyTask(() -> {
             if (!dependencyManager.waitForSimulation()) {
                 return false;
             }
@@ -98,12 +80,21 @@ public abstract class ExecutableStep implements EventListener {
 
             if (checkRequirements()) {
                 logger.debug("Simulation successful.");
+                markOutputsAs(OutputFile.states.WillBeCreated);
                 return createFiles();
             } else {
+                logger.warn("Simulation failed.");
+                markOutputsAs(OutputFile.states.WillNotBeCreated);
                 return false;
             }
         });
-        return simulationFuture;
+    }
+
+    private void markOutputsAs(OutputFile.states state) {
+        if (!outputs.isEmpty()) {
+            logger.trace("Marking outputs as " + state);
+            outputs.forEach(output -> output.setState(state));
+        }
     }
 
     private boolean createFiles() {
@@ -128,10 +119,6 @@ public abstract class ExecutableStep implements EventListener {
         });
     }
 
-    public OutputFile getWorkingDirectory() {
-        return workingDirectory;
-    }
-
     /**
      * Wraps the executableStep execution with some framework checks.
      * <p>
@@ -139,7 +126,7 @@ public abstract class ExecutableStep implements EventListener {
      * Stores new hashes if the executableStep has been executed and developmentMode is disabled.
      */
     Future<Boolean> execute() {
-        executionFuture = ExecutionManager.submitEasyTask(() -> {
+        return ExecutionManager.submitEasyTask(() -> {
             if (!dependencyManager.waitForExecution()) {
                 return false;
             }
@@ -158,7 +145,7 @@ public abstract class ExecutableStep implements EventListener {
 
             boolean successful;
 
-            if (!mayBeSkipped() || !hashManager.validateHashes(getConfigs()) || !ExecutionManager.isSkippingEnabled()) {
+            if (!mayBeSkipped() || !ExecutionManager.isHashingEnabled() || !hashManager.validateHashes(getConfigs())) {
                 logger.debug("Execution starting.");
 
                 successful = callables.stream().map(ExecutionManager::submitPerformanceTask).allMatch(future -> {
@@ -170,7 +157,7 @@ public abstract class ExecutableStep implements EventListener {
                     }
                 });
 
-                if (mayBeSkipped()) {
+                if (mayBeSkipped() && ExecutionManager.isHashingEnabled()) {
                     hashManager.writeHashes(getConfigs());
                 }
             } else {
@@ -180,9 +167,14 @@ public abstract class ExecutableStep implements EventListener {
 
             logger.info("Finished. Step took " + timer.stopAndGetDeltaFormatted());
 
+            if (successful) {
+                markOutputsAs(OutputFile.states.Created);
+            } else {
+                markOutputsAs(OutputFile.states.ErrorDuringCreation);
+            }
+
             return successful;
         });
-        return executionFuture;
     }
 
     /**
@@ -191,8 +183,6 @@ public abstract class ExecutableStep implements EventListener {
      *
      * @return a set of the optional configs, must not be null.
      */
-
-
     private Collection<UsageConfig<?>> getConfigs() {
         Collection<UsageConfig<?>> configs = new HashSet<>();
         for (Field field : this.getClass().getDeclaredFields()) {
@@ -241,7 +231,7 @@ public abstract class ExecutableStep implements EventListener {
      */
     protected abstract Collection<Callable<Boolean>> getCallables();
 
-    protected InputFile input(OutputFile outputFile) {
+    protected InputFile addInput(OutputFile outputFile) {
         InputFile inputFile = new InputFile(inputDirectory, outputFile);
         try {
             deleteFileStructure(inputFile);
@@ -250,10 +240,19 @@ public abstract class ExecutableStep implements EventListener {
             logger.warn("Could not creat soft link: " + e.getMessage());
         }
 
+        outputFile.addListener(this.dependencyManager);
+
         return inputFile;
     }
 
     protected boolean mayBeSkipped() {
         return true;
+    }
+
+    protected OutputFile addOutput(String name) {
+        OutputFile output = new OutputFile(outputDirectory, name);
+        outputs.add(output);
+
+        return output;
     }
 }

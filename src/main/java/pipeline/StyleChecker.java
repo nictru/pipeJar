@@ -71,15 +71,16 @@ public class StyleChecker {
                     return true;
                 }
                 int modifier = field.getModifiers();
-                if (!Modifier.isPublic(modifier) || Modifier.isFinal(modifier)) {
+                if (!Modifier.isPublic(modifier) || !Modifier.isFinal(modifier)) {
                     logger.warn("OutputFile \"" + field.getName() + "\" in " + step.getClass().getName() +
-                            " must be public and must not be final.");
+                            " must be public and final.");
                     return false;
                 }
                 try {
                     OutputFile outputFile = (OutputFile) field.get(step);
-                    if (!outputFile.getAbsolutePath().startsWith(step.getWorkingDirectory().getAbsolutePath())) {
-                        logger.warn("\"updateOutputFiles()\" has not been called in constructor of " +
+                    if (!step.getOutputs().contains(outputFile)) {
+                        logger.warn("Outputfile \"" + field.getName() +
+                                "\" has not been created using the \"addOutput()\" method in " +
                                 step.getClass().getName());
                         return false;
                     }
