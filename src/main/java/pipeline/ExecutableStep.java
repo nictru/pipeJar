@@ -158,7 +158,7 @@ public abstract class ExecutableStep implements EventListener {
 
             boolean successful;
 
-            if (!mayBeSkipped() || !hashManager.validateHashes(getConfigs())) {
+            if (!mayBeSkipped() || !hashManager.validateHashes(getConfigs()) || !ExecutionManager.isSkippingEnabled()) {
                 logger.debug("Execution starting.");
 
                 successful = callables.stream().map(ExecutionManager::submitPerformanceTask).allMatch(future -> {

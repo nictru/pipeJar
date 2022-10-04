@@ -16,6 +16,7 @@ public class ExecutionManager {
     public static OutputFile workingDirectory;
     private static Integer threadNumber;
     private static ExecutorService performancePool;
+    private static boolean skippingEnabled = true;
     private final Logger logger = LogManager.getLogger(ExecutionManager.class);
     private final List<ExecutableStep> steps;
 
@@ -52,6 +53,14 @@ public class ExecutionManager {
 
     static Future<Boolean> submitEasyTask(Callable<Boolean> callable) {
         return chillPool.submit(callable);
+    }
+
+    public static void disableSkipping() {
+        skippingEnabled = false;
+    }
+
+    static boolean isSkippingEnabled() {
+        return skippingEnabled;
     }
 
     public void run() {

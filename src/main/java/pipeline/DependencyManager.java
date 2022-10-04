@@ -21,7 +21,8 @@ public record DependencyManager(Collection<ExecutableStep> dependencies, Logger 
         if (dependencies.isEmpty()) {
             return true;
         }
-        logger.debug("Waiting for " + dependencies.size() + " " + process + (dependencies.size() == 1 ? " dependency." : "dependencies."));
+        logger.debug("Waiting for " + dependencies.size() + " " + process +
+                (dependencies.size() == 1 ? " dependency." : "dependencies."));
         boolean result = dependencies.stream().map(func).allMatch(future -> {
             try {
                 return future.get();
@@ -30,6 +31,7 @@ public record DependencyManager(Collection<ExecutableStep> dependencies, Logger 
                 return false;
             }
         });
+
 
         if (result) {
             logger.debug("All dependencies finished their " + process + " successfully.");
