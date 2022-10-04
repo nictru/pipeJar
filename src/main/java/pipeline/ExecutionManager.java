@@ -86,7 +86,11 @@ public class ExecutionManager {
     private boolean waitForAll(Function<ExecutableStep, Future<Boolean>> function, String name) {
         logger.info("Waiting for " + name + " results...");
 
-        boolean allGood = steps.parallelStream().map(function).allMatch(future -> {
+        Collection<Future<Boolean>> futures = new HashSet<>();
+
+        steps.forEach(step -> futures.add(function.apply(step)));
+
+        boolean allGood = futures.stream().allMatch(future -> {
             try {
                 return future.get();
             } catch (InterruptedException | ExecutionException e) {

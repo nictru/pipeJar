@@ -10,7 +10,10 @@ import util.FileManagement;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collection;
+import java.util.EventListener;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -24,13 +27,13 @@ public abstract class ExecutableStep implements EventListener {
      */
     protected final Logger logger = LogManager.getLogger(this.getClass());
     private final DependencyManager dependencyManager;
-    private final OutputFile workingDirectory, inputDirectory, outputDirectory;
+    private final OutputFile inputDirectory, outputDirectory;
     private final HashManager hashManager;
 
     private final Collection<OutputFile> outputs = new HashSet<>();
 
     protected ExecutableStep(OutputFile... dependencies) {
-        workingDirectory =
+        OutputFile workingDirectory =
                 new OutputFile(ExecutionManager.workingDirectory, this.getClass().getName().replace(".", "_"));
         inputDirectory = new OutputFile(workingDirectory, "input");
         outputDirectory = new OutputFile(workingDirectory, "output");
@@ -51,18 +54,6 @@ public abstract class ExecutableStep implements EventListener {
         return outputs;
     }
 
-    private Collection<Field> getOutputFileFields() {
-        Set<Field> outputFiles = new HashSet<>();
-
-        for (Field field : this.getClass().getDeclaredFields()) {
-            if (field.getType().equals(OutputFile.class)) {
-                outputFiles.add(field);
-            }
-        }
-
-        return outputFiles;
-    }
-
 
     /**
      * Check if all the requirements of this executableStep are met and broadcast the created file structures. Does
@@ -81,7 +72,9 @@ public abstract class ExecutableStep implements EventListener {
             if (checkRequirements()) {
                 logger.debug("Simulation successful.");
                 markOutputsAs(OutputFile.states.WillBeCreated);
-                return createFiles();
+                boolean result = createFiles();
+                logger.trace("Finished creating files.");
+                return result;
             } else {
                 logger.warn("Simulation failed.");
                 markOutputsAs(OutputFile.states.WillNotBeCreated);
@@ -100,13 +93,7 @@ public abstract class ExecutableStep implements EventListener {
     private boolean createFiles() {
         logger.debug("Creating output files.");
 
-        return getOutputFileFields().stream().map(field -> {
-            try {
-                return (OutputFile) field.get(this);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException("Illegal access: " + e.getMessage());
-            }
-        }).allMatch(outputFile -> {
+        return outputs.stream().allMatch(outputFile -> {
             if (!outputFile.exists()) {
                 try {
                     return outputFile.createNewFile();
@@ -254,5 +241,9 @@ public abstract class ExecutableStep implements EventListener {
         outputs.add(output);
 
         return output;
+    }
+
+    Collection<OutputFile> getDependencies() {
+        return dependencyManager.getDependencies();
     }
 }

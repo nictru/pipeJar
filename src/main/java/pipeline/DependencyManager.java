@@ -74,4 +74,8 @@ public class DependencyManager {
     public synchronized void notifyUpdate() {
         this.notifyAll();
     }
+
+    Collection<OutputFile> getDependencies() {
+        return dependencies;
+    }
 }
