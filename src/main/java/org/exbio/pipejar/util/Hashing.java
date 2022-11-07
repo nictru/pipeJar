@@ -1,6 +1,6 @@
-package util;
+package org.exbio.pipejar.util;
 
-import util.Comparators.FileComparator;
+import org.exbio.pipejar.util.Comparators.FileComparator;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

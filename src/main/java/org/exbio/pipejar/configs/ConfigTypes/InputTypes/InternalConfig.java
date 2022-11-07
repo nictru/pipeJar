@@ -1,4 +1,4 @@
-package configs.ConfigTypes.InputTypes;
+package org.exbio.pipejar.configs.ConfigTypes.InputTypes;
 
 import org.apache.logging.log4j.Logger;
 

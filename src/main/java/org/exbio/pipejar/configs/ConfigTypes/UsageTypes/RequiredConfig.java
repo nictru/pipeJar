@@ -1,6 +1,6 @@
-package configs.ConfigTypes.UsageTypes;
+package org.exbio.pipejar.configs.ConfigTypes.UsageTypes;
 
-import configs.ConfigTypes.InputTypes.InputConfig;
+import org.exbio.pipejar.configs.ConfigTypes.InputTypes.InputConfig;
 
 public class RequiredConfig<T> extends UsageConfig<T> {
     public RequiredConfig(InputConfig<T> input) {

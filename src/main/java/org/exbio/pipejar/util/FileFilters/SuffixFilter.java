@@ -1,4 +1,4 @@
-package util.FileFilters;
+package org.exbio.pipejar.util.FileFilters;
 
 import java.io.File;
 import java.io.FileFilter;

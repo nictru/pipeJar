@@ -1,6 +1,6 @@
-package configs.ConfigValidators;
+package org.exbio.pipejar.configs.ConfigValidators;
 
-import configs.ConfigTypes.InputTypes.InputConfig;
+import org.exbio.pipejar.configs.ConfigTypes.InputTypes.InputConfig;
 
 import java.util.HashSet;
 import java.util.List;

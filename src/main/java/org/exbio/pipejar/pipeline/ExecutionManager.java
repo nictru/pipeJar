@@ -1,6 +1,6 @@
-package pipeline;
+package org.exbio.pipejar.pipeline;
 
-import configs.ConfigTypes.FileTypes.OutputFile;
+import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -89,6 +89,8 @@ public class ExecutionManager {
         Collection<Future<Boolean>> futures = new HashSet<>();
 
         steps.forEach(step -> futures.add(function.apply(step)));
+
+        logger.info("Execution of all features started.");
 
         boolean allGood = futures.stream().allMatch(future -> {
             try {

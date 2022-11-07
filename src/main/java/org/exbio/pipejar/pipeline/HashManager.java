@@ -1,10 +1,10 @@
-package pipeline;
+package org.exbio.pipejar.pipeline;
 
-import configs.ConfigTypes.FileTypes.OutputFile;
-import configs.ConfigTypes.UsageTypes.UsageConfig;
+import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
+import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.UsageConfig;
 import org.apache.logging.log4j.Logger;
-import util.FileManagement;
-import util.Hashing;
+import org.exbio.pipejar.util.FileManagement;
+import org.exbio.pipejar.util.Hashing;
 
 import java.io.File;
 import java.io.IOException;

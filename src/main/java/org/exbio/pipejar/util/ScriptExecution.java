@@ -1,7 +1,5 @@
 package org.exbio.pipejar.util;
 
-import tfprio.tfprio.TFPRIO;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,121 +8,70 @@ import java.util.List;
 
 public class ScriptExecution
 {
-    public static void executeAndWait(File file, Logger logger)
-    {
-        Process process = execute(file, logger);
-        waitFor(process, logger, List.of(file.getAbsolutePath()));
+    public static void executeAndWait(File file) throws IOException {
+        Process process = execute(file);
+        waitFor(process, List.of(file.getAbsolutePath()));
     }
 
-    public static void executeAndWait(List<String> command, Logger logger)
-    {
-        Process process = execute(command, logger, new HashMap<>(), false);
-        waitFor(process, logger, command);
+    public static void executeAndWait(List<String> command) throws IOException {
+        Process process = execute(command, new HashMap<>());
+        waitFor(process, command);
     }
 
-    private static Process executeProcessBuilder(ProcessBuilder builder, Logger logger, boolean redirectOutput)
-    {
-        logger.debug("Executing command: " + builder.command());
-        if (redirectOutput ||
-                (TFPRIO.configs != null && TFPRIO.configs.general.redirectExternalScriptOutputStream.get()))
-        {
-            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-        }
-        if (redirectOutput ||
-                (TFPRIO.configs != null && TFPRIO.configs.general.redirectExternalScriptErrorStream.get()))
-        {
-            builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-        }
-        try
-        {
-            return builder.start();
-        } catch (IOException e)
-        {
-            logger.error(e.getMessage());
-        }
-        // Will never be reached since logger.error exits the program.
-        return null;
+    private static Process executeProcessBuilder(ProcessBuilder builder) throws IOException {
+        return builder.start();
     }
 
-    public static void executeAndWait(String command, Logger logger)
-    {
-        executeAndWait(command, logger, new HashMap<>(), false);
+    public static void executeAndWait(String command) throws IOException {
+        executeAndWait(command, new HashMap<>());
     }
 
-    public static void executeAndWait(String command, Logger logger, HashMap<String, String> environment)
-    {
-        executeAndWait(command, logger, environment, false);
-    }
-
-
-    public static void executeAndWait(String command, Logger logger, boolean redirectOutput)
-    {
-        executeAndWait(command, logger, new HashMap<>(), redirectOutput);
-    }
-
-    public static void executeAndWait(String command, Logger logger, HashMap<String, String> environment,
-                                      boolean redirectOutput)
-    {
-        Process process = execute(command, logger, environment, redirectOutput);
-        int returnCode = waitFor(process, logger, new ArrayList<>(List.of(command)));
+    public static void executeAndWait(String command, HashMap<String, String> environment) throws IOException {
+        Process process = execute(command, environment);
+        int returnCode = waitFor(process, new ArrayList<>(List.of(command)));
 
         if (returnCode != 0)
         {
-            logger.error("Received return code " + returnCode + "\n\n Command was: " + command);
+            throw new RuntimeException("Received return code " + returnCode + "\n\n Command was: " + command);
         }
     }
 
-    public static void executeAndWait(String executable, String fileExtension, Logger logger)
-    {
+    public static void executeAndWait(String executable, String fileExtension) throws IOException {
         List<String> command = getExecutionCommand(executable, fileExtension);
 
-        executeAndWait(command, logger);
+        executeAndWait(command);
     }
 
-    private static int waitFor(Process process, Logger logger, List<String> command)
-    {
+    private static int waitFor(Process process, List<String> command) throws IOException {
         try
         {
             int returnCode = process.waitFor();
             if (returnCode != 0)
             {
-                logger.warn("Received return code " + returnCode + " Command was: " + command);
-                logger.error(new String(process.getErrorStream().readAllBytes()));
+                throw new IOException("Received return code " + returnCode + " Command was: " + command);
             }
             return returnCode;
         } catch (InterruptedException | IOException e)
         {
-            logger.error(e.getMessage());
+            throw new IOException(e.getMessage());
         }
-
-        // Will never be reached since logger.error exits the process
-        return 1;
     }
 
     private static List<String> getExecutionPrefix(String fileExtension, boolean fileExecution)
     {
         List<String> command = new ArrayList<>();
-        switch (fileExtension)
-        {
-            case ".R":
-                command.add("Rscript");
-                break;
-            case ".py":
-
+        switch (fileExtension) {
+            case ".R" -> command.add("Rscript");
+            case ".py" -> {
                 command.add("python3");
-                if (!fileExecution)
-                {
+                if (!fileExecution) {
                     command.add("-c");
                 }
-                break;
-
-            case ".sh":
-            {
+            }
+            case ".sh" -> {
                 command.add("sh");
             }
-            break;
-            default:
-                throw new RuntimeException("This file type is not supported.");
+            default -> throw new RuntimeException("This file type is not supported.");
         }
 
         return command;
@@ -145,45 +92,33 @@ public class ScriptExecution
         return command;
     }
 
-    public static Process execute(String command, Logger logger)
-    {
-        return execute(command, logger, new HashMap<>(), false);
+    public static Process execute(String command) throws IOException {
+        return execute(command, new HashMap<>());
     }
 
-    public static Process execute(String command, Logger logger, boolean redirectOutput)
-    {
-        return execute(command, logger, new HashMap<>(), redirectOutput);
-    }
-
-    public static Process execute(String command, Logger logger, HashMap<String, String> environment,
-                                  boolean redirectOutput)
-    {
+    public static Process execute(String command, HashMap<String, String> environment) throws IOException {
         ProcessBuilder builder = new ProcessBuilder(command.split(" "));
         setEnvironment(builder, environment);
-        Process process = executeProcessBuilder(builder, logger, redirectOutput);
+        Process process = executeProcessBuilder(builder);
         assert process != null;
         return process;
     }
 
-    public static Process execute(List<String> command, Logger logger, HashMap<String, String> environment,
-                                  boolean redirectOutput)
-    {
+    public static Process execute(List<String> command, HashMap<String, String> environment) throws IOException {
         ProcessBuilder builder = new ProcessBuilder(command);
         setEnvironment(builder, environment);
-        Process process = executeProcessBuilder(builder, logger, redirectOutput);
+        Process process = executeProcessBuilder(builder);
         assert process != null;
         return process;
     }
 
-    public static Process execute(List<String> command, Logger logger)
-    {
-        return execute(command, logger, new HashMap<>(), false);
+    public static Process execute(List<String> command) throws IOException {
+        return execute(command, new HashMap<>());
     }
 
-    public static Process execute(File file, Logger logger)
-    {
+    public static Process execute(File file) throws IOException {
         List<String> command = getExecutionCommand(file);
-        return execute(command, logger);
+        return execute(command);
     }
 
     private static void setEnvironment(ProcessBuilder builder, HashMap<String, String> environment)

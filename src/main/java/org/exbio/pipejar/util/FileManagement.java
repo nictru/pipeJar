@@ -1,6 +1,6 @@
-package util;
+package org.exbio.pipejar.util;
 
-import util.FileFilters.Filters;
+import org.exbio.pipejar.util.FileFilters.Filters;
 
 import java.io.File;
 import java.io.FileNotFoundException;

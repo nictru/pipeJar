@@ -1,12 +1,12 @@
-package pipeline;
+package org.exbio.pipejar.pipeline;
 
-import configs.ConfigTypes.FileTypes.InputFile;
-import configs.ConfigTypes.FileTypes.OutputFile;
-import configs.ConfigTypes.UsageTypes.UsageConfig;
+import org.exbio.pipejar.configs.ConfigTypes.FileTypes.InputFile;
+import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
+import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.UsageConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import util.ExecutionTimeMeasurement;
-import util.FileManagement;
+import org.exbio.pipejar.util.ExecutionTimeMeasurement;
+import org.exbio.pipejar.util.FileManagement;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -18,8 +18,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static util.FileManagement.deleteFileStructure;
-import static util.FileManagement.makeSureDirectoryExists;
+import static org.exbio.pipejar.util.FileManagement.deleteFileStructure;
+import static org.exbio.pipejar.util.FileManagement.makeSureDirectoryExists;
 
 public abstract class ExecutableStep implements EventListener {
     /**
@@ -135,7 +135,7 @@ public abstract class ExecutableStep implements EventListener {
             if (!mayBeSkipped() || !ExecutionManager.isHashingEnabled() || !hashManager.validateHashes(getConfigs())) {
                 logger.debug("Execution starting.");
 
-                successful = callables.stream().map(ExecutionManager::submitPerformanceTask).allMatch(future -> {
+                successful = callables.parallelStream().map(ExecutionManager::submitPerformanceTask).allMatch(future -> {
                     try {
                         return future.get();
                     } catch (InterruptedException | ExecutionException e) {

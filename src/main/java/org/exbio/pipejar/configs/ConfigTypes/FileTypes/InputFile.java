@@ -1,4 +1,4 @@
-package configs.ConfigTypes.FileTypes;
+package org.exbio.pipejar.configs.ConfigTypes.FileTypes;
 
 import java.io.File;
 

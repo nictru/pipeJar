@@ -1,10 +1,10 @@
-package pipeline;
+package org.exbio.pipejar.pipeline;
 
-import configs.ConfigTypes.FileTypes.InputFile;
-import configs.ConfigTypes.FileTypes.OutputFile;
-import configs.ConfigTypes.UsageTypes.OptionalConfig;
-import configs.ConfigTypes.UsageTypes.RequiredConfig;
-import configs.ConfigTypes.UsageTypes.UsageConfig;
+import org.exbio.pipejar.configs.ConfigTypes.FileTypes.InputFile;
+import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
+import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.OptionalConfig;
+import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.RequiredConfig;
+import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.UsageConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -102,6 +102,7 @@ public class StyleChecker {
                 }
                 return true;
             });
+            // TODO: Add check for ConfigModule init calling in constructor
         }};
 
         return Arrays.stream(step.getClass().getDeclaredFields()).allMatch(

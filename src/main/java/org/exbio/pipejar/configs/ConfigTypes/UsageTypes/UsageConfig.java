@@ -1,7 +1,7 @@
-package configs.ConfigTypes.UsageTypes;
+package org.exbio.pipejar.configs.ConfigTypes.UsageTypes;
 
-import configs.ConfigTypes.Config;
-import configs.ConfigTypes.InputTypes.InputConfig;
+import org.exbio.pipejar.configs.ConfigTypes.Config;
+import org.exbio.pipejar.configs.ConfigTypes.InputTypes.InputConfig;
 import org.apache.logging.log4j.Logger;
 
 public abstract class UsageConfig<T> extends Config<T> {

@@ -1,10 +1,10 @@
-package configs;
+package org.exbio.pipejar.configs;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-import util.FileManagement;
+import org.exbio.pipejar.util.FileManagement;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import static util.FileManagement.writeFile;
+import static org.exbio.pipejar.util.FileManagement.writeFile;
 
 public abstract class ConfigModuleCollection {
     /**
@@ -57,29 +57,30 @@ public abstract class ConfigModuleCollection {
     public void merge(File configFile) throws IOException {
         logger.debug("Merging configuration file: " + configFile.getAbsolutePath());
         String content = FileManagement.readFile(configFile);
-        JSONObject combined = new JSONObject();
         boolean allModulesWorked = true;
 
         try {
-            combined = new JSONObject(content);
+            JSONObject combined = new JSONObject(content);
+
+            for (String moduleName : combined.keySet()) {
+                JSONObject moduleJSONObject = combined.getJSONObject(moduleName);
+
+                if (configs.containsKey(moduleName)) {
+                    ConfigModule module = configs.get(moduleName);
+                    allModulesWorked = module.merge(moduleJSONObject) && allModulesWorked;
+                } else {
+                    logger.warn("Trying to set config for unknown module: " + moduleName);
+                }
+            }
+            if (!allModulesWorked) {
+                logger.error("There were errors during config file merging. Aborting.");
+            }
+
+            logger.info("Merged configuration file: " + configFile.getAbsolutePath());
+
         } catch (JSONException e) {
             logger.error("The config JSON-File does not match the JSON formant: " + e.getMessage());
         }
-
-        for (String moduleName : combined.keySet()) {
-            JSONObject moduleJSONObject = combined.getJSONObject(moduleName);
-
-            if (configs.containsKey(moduleName)) {
-                ConfigModule module = configs.get(moduleName);
-                allModulesWorked = module.merge(moduleJSONObject) && allModulesWorked;
-            } else {
-                logger.warn("Trying to set config for unknown module: " + moduleName);
-            }
-        }
-        if (!allModulesWorked) {
-            logger.error("There were errors during config file merging. Aborting.");
-        }
-        logger.info("Merged configuration file: " + configFile.getAbsolutePath());
     }
 
     /**

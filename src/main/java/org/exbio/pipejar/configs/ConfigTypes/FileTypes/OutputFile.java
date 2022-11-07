@@ -1,6 +1,6 @@
-package configs.ConfigTypes.FileTypes;
+package org.exbio.pipejar.configs.ConfigTypes.FileTypes;
 
-import pipeline.DependencyManager;
+import org.exbio.pipejar.pipeline.DependencyManager;
 
 import java.io.File;
 import java.util.Collection;

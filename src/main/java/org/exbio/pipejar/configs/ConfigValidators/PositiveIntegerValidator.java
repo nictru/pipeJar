@@ -1,4 +1,4 @@
-package configs.ConfigValidators;
+package org.exbio.pipejar.configs.ConfigValidators;
 
 public class PositiveIntegerValidator extends IntegerRangeValidator
 {

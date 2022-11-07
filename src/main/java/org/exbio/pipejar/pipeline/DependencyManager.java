@@ -1,6 +1,6 @@
-package pipeline;
+package org.exbio.pipejar.pipeline;
 
-import configs.ConfigTypes.FileTypes.OutputFile;
+import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;

@@ -1,10 +1,12 @@
-package configs.ConfigTypes.InputTypes;
+package org.exbio.pipejar.configs.ConfigTypes.InputTypes;
 
-import configs.ConfigValidators.Validator;
+import org.exbio.pipejar.configs.ConfigTypes.FileTypes.InputFile;
+import org.exbio.pipejar.configs.ConfigValidators.Validator;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -73,7 +75,10 @@ public class ExternalConfig<T> extends InputConfig<T> {
             setValue((T) (Double) doubleValue);
         } else if (value == JSONObject.NULL) {
             setValue(null);
-        } else {
+        } else if ((configClass.equals(File.class)) && value.getClass().equals(String.class)){
+            setValue((T) new File((String) value));
+        }
+        else {
             throw new ClassCastException(
                     "Trying to set a value of type " + value.getClass() + " to a config with type " + configClass +
                             ": " + getName());

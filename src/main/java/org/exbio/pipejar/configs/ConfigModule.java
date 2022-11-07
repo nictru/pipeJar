@@ -1,10 +1,12 @@
-package configs;
+package org.exbio.pipejar.configs;
 
-import configs.ConfigTypes.InputTypes.InputConfig;
+import org.exbio.pipejar.configs.ConfigTypes.InputTypes.InputConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exbio.pipejar.util.FileManagement;
+import org.json.JSONException;
 import org.json.JSONObject;
-import pipeline.ExecutionManager;
+import org.exbio.pipejar.pipeline.ExecutionManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -124,6 +126,26 @@ public abstract class ConfigModule {
             }
         }
         return worked;
+    }
+
+    /**
+     * Merge an external config file to the configs object.
+     *
+     * @param configFile the config file
+     * @throws IOException if the config file cannot be read
+     */
+    public void merge(File configFile) throws IOException {
+        logger.debug("Merging configuration file: " + configFile.getAbsolutePath());
+        String content = FileManagement.readFile(configFile);
+
+        try {
+            JSONObject combined = new JSONObject(content);
+            merge(combined);
+            logger.info("Merged configuration file: " + configFile.getAbsolutePath());
+
+        } catch (JSONException e) {
+            logger.error("The config JSON-File does not match the JSON formant: " + e.getMessage());
+        }
     }
 
     /**

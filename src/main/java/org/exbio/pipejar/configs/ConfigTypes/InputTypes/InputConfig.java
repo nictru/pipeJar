@@ -1,6 +1,6 @@
-package configs.ConfigTypes.InputTypes;
+package org.exbio.pipejar.configs.ConfigTypes.InputTypes;
 
-import configs.ConfigTypes.Config;
+import org.exbio.pipejar.configs.ConfigTypes.Config;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
@@ -57,7 +57,7 @@ public abstract class InputConfig<T> extends Config<T> {
         }
 
         if (value.getClass().equals(File.class)) {
-            return ((File) value).getAbsolutePath();
+            return ((File) value).getPath();
         }
 
         return value.toString();
