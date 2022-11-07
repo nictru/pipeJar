@@ -5,47 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ca183ca-4b1b-4cf8-9a5d-f777a94d6a6c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/module-info.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigModule.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigModuleCollection.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigTypes/Config.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigTypes/FileTypes/InputFile.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigTypes/FileTypes/OutputFile.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigTypes/InputTypes/ExternalConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigTypes/InputTypes/InputConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigTypes/InputTypes/InternalConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigTypes/UsageTypes/OptionalConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigTypes/UsageTypes/RequiredConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigTypes/UsageTypes/UsageConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/IntegerRangeValidator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/ListNotEmptyValidator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/PositiveDoubleValidator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/PositiveIntegerValidator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/StringListValidator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/StringValidator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/Validator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/DependencyManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutionManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/HashManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/StyleChecker.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/util/Comparators/FileComparator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/util/Comparators/IntegerStringComparator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/util/ExecutionTimeMeasurement.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/util/FileFilters/DirectoryFilter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/util/FileFilters/FileFilter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/util/FileFilters/Filters.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/util/FileFilters/SuffixFilter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/util/FileManagement.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/util/Hashing.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/util/ScriptExecution.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/log4j2.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigTypes/FileTypes/InputFile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigTypes/FileTypes/InputFile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,6 +19,7 @@
       <list>
         <option value="module-info" />
         <option value="Class" />
+        <option value="package-info" />
       </list>
     </option>
   </component>
@@ -66,25 +29,32 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="useMavenConfig" value="true" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
   <component name="ProjectId" id="2HDBTy81QVYwm5DyQT1UrUQR6DD" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "/home/nico/Software/pipeJarMaven/src/main/resources",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/nico/Software/pipeJarMaven/src/main/resources&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/resources" />
@@ -107,6 +77,8 @@
       <option name="presentableId" value="Default" />
       <updated>1667809787835</updated>
       <workItem from="1667809789214" duration="17441000" />
+      <workItem from="1667838518868" duration="858000" />
+      <workItem from="1667852822612" duration="2642000" />
     </task>
     <servers />
   </component>

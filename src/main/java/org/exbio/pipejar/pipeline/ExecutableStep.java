@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.exbio.pipejar.util.ExecutionTimeMeasurement;
 import org.exbio.pipejar.util.FileManagement;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -50,7 +51,7 @@ public abstract class ExecutableStep implements EventListener {
         hashManager = new HashManager(workingDirectory, logger, inputDirectory, outputDirectory);
     }
 
-    Collection<OutputFile> getOutputs() {
+    protected Collection<OutputFile> getOutputs() {
         return outputs;
     }
 
@@ -91,6 +92,12 @@ public abstract class ExecutableStep implements EventListener {
     }
 
     private boolean createFiles() {
+        if (!doCreateFiles())
+        {
+            logger.debug("Skipping pre-creation of output files since manually deactivated.");
+            return true;
+        }
+
         logger.debug("Creating output files.");
 
         return outputs.stream().allMatch(outputFile -> {
@@ -104,6 +111,14 @@ public abstract class ExecutableStep implements EventListener {
             }
             return true;
         });
+    }
+
+    /***
+     * Override this method, if files should not be pre-created during simulation
+     * @return true if files should be pre-created, false otherwise
+     */
+    protected boolean doCreateFiles() {
+        return true;
     }
 
     /**
@@ -218,6 +233,20 @@ public abstract class ExecutableStep implements EventListener {
      */
     protected abstract Collection<Callable<Boolean>> getCallables();
 
+    protected InputFile addInput(UsageConfig<File> file) {
+        if (!file.isSet()) {
+            throw new IllegalArgumentException("Cannot add not-set file as input.");
+        }
+        InputFile inputFile = new InputFile(inputDirectory, file.get().getName());
+        try {
+            deleteFileStructure(inputFile);
+            FileManagement.softLink(inputFile, file.get());
+        } catch (IOException e) {
+            logger.warn("Could not creat soft link: " + e.getMessage());
+        }
+
+        return inputFile;
+    }
     protected InputFile addInput(OutputFile outputFile) {
         InputFile inputFile = new InputFile(inputDirectory, outputFile);
         try {

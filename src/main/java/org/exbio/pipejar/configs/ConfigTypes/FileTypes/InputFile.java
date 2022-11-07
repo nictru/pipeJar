@@ -11,6 +11,10 @@ public class InputFile extends File {
         super(parent, child);
     }
 
+    public InputFile(OutputFile workingDirectory, File file) {
+        this(workingDirectory, file.getName());
+    }
+
     public InputFile(OutputFile workingDirectory, OutputFile outputFile) {
         this(workingDirectory, outputFile.getName());
     }
