@@ -8,13 +8,13 @@ import java.util.List;
 
 public class ScriptExecution
 {
-    public static void executeAndWait(File file) throws IOException {
-        Process process = execute(file);
+    public static void executeAndWait(File file, boolean redirectOutput) throws IOException {
+        Process process = execute(file, redirectOutput);
         waitFor(process, List.of(file.getAbsolutePath()));
     }
 
-    public static void executeAndWait(List<String> command) throws IOException {
-        Process process = execute(command, new HashMap<>());
+    public static void executeAndWait(List<String> command, boolean redirectOutput) throws IOException {
+        Process process = execute(command, new HashMap<>(), redirectOutput);
         waitFor(process, command);
     }
 
@@ -22,12 +22,12 @@ public class ScriptExecution
         return builder.start();
     }
 
-    public static void executeAndWait(String command) throws IOException {
-        executeAndWait(command, new HashMap<>());
+    public static void executeAndWait(String command, boolean redirectOutput) throws IOException {
+        executeAndWait(command, new HashMap<>(), redirectOutput);
     }
 
-    public static void executeAndWait(String command, HashMap<String, String> environment) throws IOException {
-        Process process = execute(command, environment);
+    public static void executeAndWait(String command, HashMap<String, String> environment, boolean redirectOutput) throws IOException {
+        Process process = execute(command, environment, redirectOutput);
         int returnCode = waitFor(process, new ArrayList<>(List.of(command)));
 
         if (returnCode != 0)
@@ -36,10 +36,10 @@ public class ScriptExecution
         }
     }
 
-    public static void executeAndWait(String executable, String fileExtension) throws IOException {
+    public static void executeAndWait(String executable, String fileExtension, boolean redirectOutput) throws IOException {
         List<String> command = getExecutionCommand(executable, fileExtension);
 
-        executeAndWait(command);
+        executeAndWait(command, redirectOutput);
     }
 
     private static int waitFor(Process process, List<String> command) throws IOException {
@@ -92,33 +92,39 @@ public class ScriptExecution
         return command;
     }
 
-    public static Process execute(String command) throws IOException {
-        return execute(command, new HashMap<>());
+    public static Process execute(String command, boolean redirectOutput) throws IOException {
+        return execute(command, new HashMap<>(), redirectOutput);
     }
 
-    public static Process execute(String command, HashMap<String, String> environment) throws IOException {
+    public static Process execute(String command, HashMap<String, String> environment, boolean redirectOutput) throws IOException {
         ProcessBuilder builder = new ProcessBuilder(command.split(" "));
+        if (redirectOutput)
+            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
         setEnvironment(builder, environment);
         Process process = executeProcessBuilder(builder);
         assert process != null;
         return process;
     }
 
-    public static Process execute(List<String> command, HashMap<String, String> environment) throws IOException {
+    public static Process execute(List<String> command, HashMap<String, String> environment, boolean redirectOutput) throws IOException {
         ProcessBuilder builder = new ProcessBuilder(command);
+        if (redirectOutput)
+            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
         setEnvironment(builder, environment);
         Process process = executeProcessBuilder(builder);
         assert process != null;
         return process;
     }
 
-    public static Process execute(List<String> command) throws IOException {
-        return execute(command, new HashMap<>());
+    public static Process execute(List<String> command, boolean redirectOutput) throws IOException {
+        return execute(command, new HashMap<>(), redirectOutput);
     }
 
-    public static Process execute(File file) throws IOException {
+    public static Process execute(File file, boolean redirectOutput) throws IOException {
         List<String> command = getExecutionCommand(file);
-        return execute(command);
+        return execute(command, redirectOutput);
     }
 
     private static void setEnvironment(ProcessBuilder builder, HashMap<String, String> environment)
