@@ -1,12 +1,12 @@
 package org.exbio.pipejar.pipeline;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exbio.pipejar.configs.ConfigTypes.FileTypes.InputFile;
 import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
 import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.OptionalConfig;
 import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.RequiredConfig;
 import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.UsageConfig;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -54,7 +54,8 @@ public class StyleChecker {
             });
             // Config modifiers
             add(field -> {
-                if (!field.getType().getSuperclass().equals(UsageConfig.class)) {
+                if (Modifier.isPrivate(field.getModifiers()) ||
+                        !field.getType().getSuperclass().equals(UsageConfig.class)) {
                     return true;
                 }
                 int modifier = field.getModifiers();
@@ -94,7 +95,7 @@ public class StyleChecker {
             add(field -> {
                 Set<Class<?>> allowedTypes = new HashSet<>(
                         List.of(OptionalConfig.class, RequiredConfig.class, InputFile.class, OutputFile.class));
-                if (!allowedTypes.contains(field.getType())) {
+                if (!Modifier.isPrivate(field.getModifiers()) && !allowedTypes.contains(field.getType())) {
                     logger.warn("Field \"" + field.getName() + "\" in " + step.getClass().getName() +
                             " has a forbidden type: " + field.getType().getName() + ". Allowed types are: " +
                             allowedTypes.stream().map(Class::getSimpleName).collect(Collectors.toSet()));
