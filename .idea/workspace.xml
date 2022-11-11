@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9ca183ca-4b1b-4cf8-9a5d-f777a94d6a6c" name="Changes" comment="Improve ExecutableStep">
+    <list default="true" id="9ca183ca-4b1b-4cf8-9a5d-f777a94d6a6c" name="Changes" comment="Allow private fields of arbitrary type in executable step">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/StyleChecker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/StyleChecker.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -92,7 +93,7 @@
       <workItem from="1667889668126" duration="1558000" />
       <workItem from="1667896843066" duration="46000" />
       <workItem from="1667897026096" duration="4308000" />
-      <workItem from="1668194206356" duration="169000" />
+      <workItem from="1668194206356" duration="4314000" />
     </task>
     <task id="LOCAL-00001" summary="Implement option to use input configs as input files">
       <created>1667855564492</created>
@@ -115,7 +116,14 @@
       <option name="project" value="LOCAL" />
       <updated>1668194291245</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Allow private fields of arbitrary type in executable step">
+      <created>1668194403107</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1668194403107</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -136,7 +144,8 @@
     <MESSAGE value="Implement option to use input configs as input files" />
     <MESSAGE value="Implement option for redirecting command output to console" />
     <MESSAGE value="Improve ExecutableStep" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improve ExecutableStep" />
+    <MESSAGE value="Allow private fields of arbitrary type in executable step" />
+    <option name="LAST_COMMIT_MESSAGE" value="Allow private fields of arbitrary type in executable step" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

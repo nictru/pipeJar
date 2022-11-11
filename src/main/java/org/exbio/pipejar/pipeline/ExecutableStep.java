@@ -11,6 +11,7 @@ import org.exbio.pipejar.util.FileManagement;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.EventListener;
 import java.util.HashSet;
@@ -34,7 +35,18 @@ public abstract class ExecutableStep implements EventListener {
     private final Collection<OutputFile> outputs = new HashSet<>();
     private final Collection<InputFile> inputs = new HashSet<>();
 
+    protected ExecutableStep(OutputFile... dependencies) {
+        this(new HashSet<>(), dependencies);
+    }
+
     protected ExecutableStep(Collection<OutputFile> dependencies) {
+        this(dependencies, dependencies.stream().findFirst().get());
+    }
+
+    protected ExecutableStep(Collection<OutputFile> dependencies, OutputFile... otherDependencies) {
+        Collection<OutputFile> combined = new HashSet<>(dependencies) {{
+            addAll(List.of(otherDependencies));
+        }};
         OutputFile workingDirectory =
                 new OutputFile(ExecutionManager.workingDirectory, this.getClass().getName().replace(".", "_"));
         inputDirectory = new OutputFile(workingDirectory, "input");
@@ -48,14 +60,10 @@ public abstract class ExecutableStep implements EventListener {
             logger.warn("Could not create working directory: " + e.getMessage());
         }
 
-        dependencyManager = new DependencyManager(dependencies, logger);
+        dependencyManager = new DependencyManager(combined, logger);
         hashManager = new HashManager(workingDirectory, logger, inputDirectory, outputDirectory);
 
-        dependencies.forEach(this::addInput);
-    }
-
-    protected ExecutableStep(OutputFile... dependencies) {
-        this(List.of(dependencies));
+        combined.forEach(this::addInput);
     }
 
     public Collection<OutputFile> getOutputs() {
@@ -112,7 +120,11 @@ public abstract class ExecutableStep implements EventListener {
         return outputs.stream().allMatch(outputFile -> {
             if (!outputFile.exists()) {
                 try {
-                    return outputFile.createNewFile();
+                    if (outputFile.getName().contains(".")) {
+                        return outputFile.createNewFile();
+                    } else {
+                        return outputFile.mkdir();
+                    }
                 } catch (IOException e) {
                     logger.warn("Could not create file: " + e.getMessage());
                     return false;
@@ -199,7 +211,8 @@ public abstract class ExecutableStep implements EventListener {
         Collection<UsageConfig<?>> configs = new HashSet<>();
         for (Field field : this.getClass().getDeclaredFields()) {
 
-            if (field.getType().getSuperclass().equals(UsageConfig.class)) {
+            if (!Modifier.isPrivate(field.getModifiers()) &&
+                    field.getType().getSuperclass().equals(UsageConfig.class)) {
                 try {
                     configs.add((UsageConfig<?>) field.get(this));
                 } catch (IllegalAccessException e) {
@@ -277,6 +290,13 @@ public abstract class ExecutableStep implements EventListener {
     }
 
     protected OutputFile addOutput(String name) {
+        OutputFile output = new OutputFile(outputDirectory, name);
+        outputs.add(output);
+
+        return output;
+    }
+
+    protected OutputFile addOutputDirectory(String name) {
         OutputFile output = new OutputFile(outputDirectory, name);
         outputs.add(output);
 
