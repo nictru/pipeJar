@@ -1,10 +1,10 @@
 package org.exbio.pipejar.pipeline;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exbio.pipejar.configs.ConfigTypes.FileTypes.InputFile;
 import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
 import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.UsageConfig;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exbio.pipejar.util.ExecutionTimeMeasurement;
 import org.exbio.pipejar.util.FileManagement;
 
@@ -27,13 +27,14 @@ public abstract class ExecutableStep implements EventListener {
      * The logger of this ExecutableStep.
      */
     protected final Logger logger = LogManager.getLogger(this.getClass());
+    protected final OutputFile inputDirectory, outputDirectory;
     private final DependencyManager dependencyManager;
-    private final OutputFile inputDirectory, outputDirectory;
     private final HashManager hashManager;
 
     private final Collection<OutputFile> outputs = new HashSet<>();
+    private final Collection<InputFile> inputs = new HashSet<>();
 
-    protected ExecutableStep(OutputFile... dependencies) {
+    protected ExecutableStep(Collection<OutputFile> dependencies) {
         OutputFile workingDirectory =
                 new OutputFile(ExecutionManager.workingDirectory, this.getClass().getName().replace(".", "_"));
         inputDirectory = new OutputFile(workingDirectory, "input");
@@ -47,14 +48,23 @@ public abstract class ExecutableStep implements EventListener {
             logger.warn("Could not create working directory: " + e.getMessage());
         }
 
-        dependencyManager = new DependencyManager(List.of(dependencies), logger);
+        dependencyManager = new DependencyManager(dependencies, logger);
         hashManager = new HashManager(workingDirectory, logger, inputDirectory, outputDirectory);
+
+        dependencies.forEach(this::addInput);
     }
 
-    protected Collection<OutputFile> getOutputs() {
+    protected ExecutableStep(OutputFile... dependencies) {
+        this(List.of(dependencies));
+    }
+
+    public Collection<OutputFile> getOutputs() {
         return outputs;
     }
 
+    protected Collection<InputFile> getInputs() {
+        return inputs;
+    }
 
     /**
      * Check if all the requirements of this executableStep are met and broadcast the created file structures. Does
@@ -92,8 +102,7 @@ public abstract class ExecutableStep implements EventListener {
     }
 
     private boolean createFiles() {
-        if (!doCreateFiles())
-        {
+        if (!doCreateFiles()) {
             logger.debug("Skipping pre-creation of output files since manually deactivated.");
             return true;
         }
@@ -150,14 +159,15 @@ public abstract class ExecutableStep implements EventListener {
             if (!mayBeSkipped() || !ExecutionManager.isHashingEnabled() || !hashManager.validateHashes(getConfigs())) {
                 logger.debug("Execution starting.");
 
-                successful = callables.parallelStream().map(ExecutionManager::submitPerformanceTask).allMatch(future -> {
-                    try {
-                        return future.get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        logger.warn(e.getMessage());
-                        return false;
-                    }
-                });
+                successful =
+                        callables.parallelStream().map(ExecutionManager::submitPerformanceTask).allMatch(future -> {
+                            try {
+                                return future.get();
+                            } catch (InterruptedException | ExecutionException e) {
+                                logger.warn(e.getMessage());
+                                return false;
+                            }
+                        });
 
                 if (mayBeSkipped() && ExecutionManager.isHashingEnabled()) {
                     hashManager.writeHashes(getConfigs());
@@ -247,15 +257,16 @@ public abstract class ExecutableStep implements EventListener {
 
         return inputFile;
     }
+
     protected InputFile addInput(OutputFile outputFile) {
         InputFile inputFile = new InputFile(inputDirectory, outputFile);
         try {
-            deleteFileStructure(inputFile);
             FileManagement.softLink(inputFile, outputFile);
         } catch (IOException e) {
             logger.warn("Could not creat soft link: " + e.getMessage());
         }
 
+        inputs.add(inputFile);
         outputFile.addListener(this.dependencyManager);
 
         return inputFile;
