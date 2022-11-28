@@ -2,7 +2,7 @@ package org.exbio.pipejar.configs.ConfigValidators;
 
 import org.exbio.pipejar.configs.ConfigTypes.InputTypes.InputConfig;
 
-public class IntegerRangeValidator implements Validator<Integer> {
+public class IntegerRangeValidator extends Validator<Integer> {
     private final int min, max;
 
     public IntegerRangeValidator(int min, int max) {

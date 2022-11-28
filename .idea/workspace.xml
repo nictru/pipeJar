@@ -5,9 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ca183ca-4b1b-4cf8-9a5d-f777a94d6a6c" name="Changes" comment="Allow private fields of arbitrary type in executable step">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/ExactlyOneTrueValidator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/MultiValidator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/StyleChecker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/StyleChecker.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/IntegerRangeValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/IntegerRangeValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/ListNotEmptyValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/ListNotEmptyValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/PositiveDoubleValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/PositiveDoubleValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/StringListValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/StringListValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/StringValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/StringValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/Validator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/Validator.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,8 +24,9 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="module-info" />
-        <option value="Class" />
         <option value="package-info" />
+        <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -94,6 +101,10 @@
       <workItem from="1667896843066" duration="46000" />
       <workItem from="1667897026096" duration="4308000" />
       <workItem from="1668194206356" duration="4314000" />
+      <workItem from="1668241665390" duration="5000" />
+      <workItem from="1669578166958" duration="231000" />
+      <workItem from="1669579060111" duration="18000" />
+      <workItem from="1669618103862" duration="786000" />
     </task>
     <task id="LOCAL-00001" summary="Implement option to use input configs as input files">
       <created>1667855564492</created>

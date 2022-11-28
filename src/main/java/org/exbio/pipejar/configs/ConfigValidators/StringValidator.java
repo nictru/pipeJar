@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class StringValidator implements Validator<String> {
+public class StringValidator extends Validator<String> {
     private final Set<String> allowedValues;
 
     public StringValidator(String... allowedValues) {
