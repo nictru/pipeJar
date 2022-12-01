@@ -34,6 +34,7 @@ public abstract class ExecutableStep implements EventListener {
 
     private final Collection<OutputFile> outputs = new HashSet<>();
     private final Collection<InputFile> inputs = new HashSet<>();
+    private boolean skip = false;
 
     protected ExecutableStep(OutputFile... dependencies) {
         this(new HashSet<>(), dependencies);
@@ -53,6 +54,7 @@ public abstract class ExecutableStep implements EventListener {
         outputDirectory = new OutputFile(workingDirectory, "output");
 
         try {
+            deleteFileStructure(inputDirectory);
             makeSureDirectoryExists(workingDirectory);
             makeSureDirectoryExists(inputDirectory);
             makeSureDirectoryExists(outputDirectory);
@@ -62,8 +64,6 @@ public abstract class ExecutableStep implements EventListener {
 
         dependencyManager = new DependencyManager(combined, logger);
         hashManager = new HashManager(workingDirectory, logger, inputDirectory, outputDirectory);
-
-        combined.forEach(this::addInput);
     }
 
     public Collection<OutputFile> getOutputs() {
@@ -91,6 +91,12 @@ public abstract class ExecutableStep implements EventListener {
             if (checkRequirements()) {
                 logger.debug("Simulation successful.");
                 markOutputsAs(OutputFile.states.WillBeCreated);
+                if (mayBeSkipped() && ExecutionManager.isHashingEnabled() && hashManager.validateHashes(getConfigs())) {
+                    skip = true;
+                } else {
+                    deleteFileStructure(outputDirectory);
+                    makeSureDirectoryExists(outputDirectory);
+                }
                 boolean result = createFiles();
                 logger.trace("Finished creating files.");
                 return result;
@@ -120,6 +126,11 @@ public abstract class ExecutableStep implements EventListener {
         return outputs.stream().allMatch(outputFile -> {
             if (!outputFile.exists()) {
                 try {
+                    File parent = outputFile.getParentFile();
+                    if (!parent.exists() && !parent.mkdirs()) {
+                        logger.warn("Could not ensure that parent directory exists: " + parent.getAbsolutePath());
+                    }
+
                     if (outputFile.getName().contains(".")) {
                         return outputFile.createNewFile();
                     } else {
@@ -140,6 +151,10 @@ public abstract class ExecutableStep implements EventListener {
      */
     protected boolean doCreateFiles() {
         return true;
+    }
+
+    private void clearOutputs() {
+
     }
 
     /**
@@ -168,7 +183,7 @@ public abstract class ExecutableStep implements EventListener {
 
             boolean successful;
 
-            if (!mayBeSkipped() || !ExecutionManager.isHashingEnabled() || !hashManager.validateHashes(getConfigs())) {
+            if (!skip) {
                 logger.debug("Execution starting.");
 
                 successful =
@@ -211,7 +226,7 @@ public abstract class ExecutableStep implements EventListener {
         Collection<UsageConfig<?>> configs = new HashSet<>();
         for (Field field : this.getClass().getDeclaredFields()) {
 
-            if (!Modifier.isPrivate(field.getModifiers()) &&
+            if (!Modifier.isPrivate(field.getModifiers()) && !field.getName().equals("outputFiles") &&
                     field.getType().getSuperclass().equals(UsageConfig.class)) {
                 try {
                     configs.add((UsageConfig<?>) field.get(this));
@@ -290,14 +305,11 @@ public abstract class ExecutableStep implements EventListener {
     }
 
     protected OutputFile addOutput(String name) {
-        OutputFile output = new OutputFile(outputDirectory, name);
-        outputs.add(output);
-
-        return output;
+        return addOutput(this.outputDirectory, name);
     }
 
-    protected OutputFile addOutputDirectory(String name) {
-        OutputFile output = new OutputFile(outputDirectory, name);
+    protected OutputFile addOutput(OutputFile parent, String name) {
+        OutputFile output = new OutputFile(parent, name);
         outputs.add(output);
 
         return output;

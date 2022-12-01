@@ -1,8 +1,8 @@
 package org.exbio.pipejar.pipeline;
 
-import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -20,8 +20,12 @@ public class ExecutionManager {
     private final Collection<ExecutableStep> steps;
 
     public ExecutionManager(ExecutableStep... steps) {
-        this.steps = new HashSet<>(List.of(steps));
-        if (new StyleChecker().check(this.steps)) {
+        this(List.of(steps));
+    }
+
+    public ExecutionManager(Collection<ExecutableStep> steps) {
+        this.steps = steps;
+        if (new StyleChecker().check(steps)) {
             logger.info("Style checks finished successfully.");
         } else {
             logger.error("Style checks finished with problems.");

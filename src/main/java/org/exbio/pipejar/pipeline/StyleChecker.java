@@ -54,7 +54,7 @@ public class StyleChecker {
             });
             // Config modifiers
             add(field -> {
-                if (Modifier.isPrivate(field.getModifiers()) ||
+                if (Modifier.isPrivate(field.getModifiers()) || field.getName().equals("outputFiles") ||
                         !field.getType().getSuperclass().equals(UsageConfig.class)) {
                     return true;
                 }
@@ -95,7 +95,8 @@ public class StyleChecker {
             add(field -> {
                 Set<Class<?>> allowedTypes = new HashSet<>(
                         List.of(OptionalConfig.class, RequiredConfig.class, InputFile.class, OutputFile.class));
-                if (!Modifier.isPrivate(field.getModifiers()) && !allowedTypes.contains(field.getType())) {
+                if (!Modifier.isPrivate(field.getModifiers()) && !allowedTypes.contains(field.getType()) &&
+                        !field.getName().equals("outputFiles")) {
                     logger.warn("Field \"" + field.getName() + "\" in " + step.getClass().getName() +
                             " has a forbidden type: " + field.getType().getName() + ". Allowed types are: " +
                             allowedTypes.stream().map(Class::getSimpleName).collect(Collectors.toSet()));
