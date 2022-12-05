@@ -1,12 +1,12 @@
 package org.exbio.pipejar.configs;
 
-import org.exbio.pipejar.configs.ConfigTypes.InputTypes.InputConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exbio.pipejar.configs.ConfigTypes.InputTypes.InputConfig;
+import org.exbio.pipejar.pipeline.ExecutionManager;
 import org.exbio.pipejar.util.FileManagement;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.exbio.pipejar.pipeline.ExecutionManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +22,6 @@ import java.util.Map;
  */
 public abstract class ConfigModule {
     protected final Logger logger = LogManager.getLogger(this.getClass().getName());
-    ;
 
     /**
      * Maps the config names to their objects.
@@ -66,9 +65,7 @@ public abstract class ConfigModule {
             // If the field superclass is AbstractModule
             if (superClass != null && superClass.equals(ConfigModule.class)) {
                 // Call the default constructor with the same argument as this object has been created
-                ConfigModule module = (ConfigModule) field.getType()
-                        .getConstructor(Logger.class)
-                        .newInstance(logger);
+                ConfigModule module = (ConfigModule) field.getType().getConstructor(Logger.class).newInstance(logger);
                 // Assign the created object to this object
                 field.set(this, module);
 
@@ -134,17 +131,18 @@ public abstract class ConfigModule {
      * @param configFile the config file
      * @throws IOException if the config file cannot be read
      */
-    public void merge(File configFile) throws IOException {
+    public boolean merge(File configFile) throws IOException {
         logger.debug("Merging configuration file: " + configFile.getAbsolutePath());
         String content = FileManagement.readFile(configFile);
 
         try {
             JSONObject combined = new JSONObject(content);
-            merge(combined);
+            boolean worked = merge(combined);
             logger.info("Merged configuration file: " + configFile.getAbsolutePath());
-
+            return worked;
         } catch (JSONException e) {
-            logger.error("The config JSON-File does not match the JSON formant: " + e.getMessage());
+            logger.error("The config JSON-File does not match the JSON format: " + e.getMessage());
+            return false;
         }
     }
 
@@ -200,6 +198,9 @@ public abstract class ConfigModule {
 
             if (thisValid && config.isSet() && config.get().getClass().equals(File.class)) {
                 InputConfig<File> fileConfig = (InputConfig<File>) config;
+                if (fileConfig.isSet() && !fileConfig.get().exists()) {
+                    configsValid = false;
+                }
             }
         }
         return subModulesValid && configsValid;

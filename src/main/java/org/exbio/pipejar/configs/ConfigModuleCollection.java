@@ -2,9 +2,9 @@ package org.exbio.pipejar.configs;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exbio.pipejar.util.FileManagement;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.exbio.pipejar.util.FileManagement;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +54,7 @@ public abstract class ConfigModuleCollection {
      * @param configFile the config file
      * @throws IOException if the config file cannot be read
      */
-    public void merge(File configFile) throws IOException {
+    public boolean merge(File configFile) throws IOException {
         logger.debug("Merging configuration file: " + configFile.getAbsolutePath());
         String content = FileManagement.readFile(configFile);
         boolean allModulesWorked = true;
@@ -73,14 +73,15 @@ public abstract class ConfigModuleCollection {
                 }
             }
             if (!allModulesWorked) {
-                logger.error("There were errors during config file merging. Aborting.");
+                logger.error("There were errors during config file merging.");
             }
 
             logger.info("Merged configuration file: " + configFile.getAbsolutePath());
-
         } catch (JSONException e) {
-            logger.error("The config JSON-File does not match the JSON formant: " + e.getMessage());
+            logger.error("The config JSON-File does not match the JSON format: " + e.getMessage());
+            return false;
         }
+        return allModulesWorked;
     }
 
     /**
@@ -128,7 +129,7 @@ public abstract class ConfigModuleCollection {
     /**
      * Validate the configs inside all the modules.
      */
-    public void validate() {
+    public boolean validate() {
         logger.info("Validating configs");
         boolean allValid = true;
         for (ConfigModule module : configs.values()) {
@@ -137,8 +138,9 @@ public abstract class ConfigModuleCollection {
         if (allValid) {
             logger.info("Configs are valid.");
         } else {
-            logger.error("Configs are invalid. Aborting.");
+            logger.error("Configs are invalid..");
         }
+        return allValid;
     }
 
     /**

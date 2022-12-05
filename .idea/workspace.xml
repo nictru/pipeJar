@@ -4,11 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9ca183ca-4b1b-4cf8-9a5d-f777a94d6a6c" name="Changes" comment="Allow private fields of arbitrary type in executable step">
+    <list default="true" id="9ca183ca-4b1b-4cf8-9a5d-f777a94d6a6c" name="Changes" comment="Some adaptions for TFPRIO">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ClassGetter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/RequiresOtherToBeTrueValidator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/steps/ConcatenateFiles.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigModule.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigModule.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigModuleCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigModuleCollection.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/ExactlyOneTrueValidator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/MultiValidator.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/StyleChecker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/StyleChecker.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,8 +25,8 @@
       <list>
         <option value="module-info" />
         <option value="package-info" />
-        <option value="Class" />
         <option value="Interface" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -50,27 +55,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "code.cleanup.on.save": "true",
-    "last_opened_file_path": "/home/nico/Software/pipeJarMaven/src/main/resources",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "rearrange.code.on.save": "true",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;code.cleanup.on.save&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/nico/Software/pipeJarMaven/src/main/resources&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;rearrange.code.on.save&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/resources" />
@@ -81,6 +86,8 @@
       <recent name="$PROJECT_DIR$/src/main/java/org/exbio/pipejar" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="org.exbio.pipejar.configs" />
+      <recent name="org.exbio.pipejar.steps" />
       <recent name="org.exbio.pipejar.util" />
     </key>
   </component>
@@ -109,7 +116,13 @@
       <workItem from="1669875942344" duration="68000" />
       <workItem from="1669876025917" duration="181000" />
       <workItem from="1669876223736" duration="31000" />
-      <workItem from="1669876268542" duration="4669000" />
+      <workItem from="1669876268542" duration="5288000" />
+      <workItem from="1669898813931" duration="1857000" />
+      <workItem from="1669958758348" duration="2948000" />
+      <workItem from="1669973575484" duration="2262000" />
+      <workItem from="1670051054684" duration="2737000" />
+      <workItem from="1670156458116" duration="892000" />
+      <workItem from="1670222349485" duration="18000" />
     </task>
     <task id="LOCAL-00001" summary="Implement option to use input configs as input files">
       <created>1667855564492</created>
@@ -139,7 +152,14 @@
       <option name="project" value="LOCAL" />
       <updated>1668194403107</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Some adaptions for TFPRIO">
+      <created>1669892444517</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1669892444517</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -161,7 +181,8 @@
     <MESSAGE value="Implement option for redirecting command output to console" />
     <MESSAGE value="Improve ExecutableStep" />
     <MESSAGE value="Allow private fields of arbitrary type in executable step" />
-    <option name="LAST_COMMIT_MESSAGE" value="Allow private fields of arbitrary type in executable step" />
+    <MESSAGE value="Some adaptions for TFPRIO" />
+    <option name="LAST_COMMIT_MESSAGE" value="Some adaptions for TFPRIO" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

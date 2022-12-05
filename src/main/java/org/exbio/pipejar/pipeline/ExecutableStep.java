@@ -36,15 +36,19 @@ public abstract class ExecutableStep implements EventListener {
     private final Collection<InputFile> inputs = new HashSet<>();
     private boolean skip = false;
 
-    protected ExecutableStep(OutputFile... dependencies) {
-        this(new HashSet<>(), dependencies);
+    protected ExecutableStep(boolean add, OutputFile... dependencies) {
+        this(add, new HashSet<>(), dependencies);
     }
 
-    protected ExecutableStep(Collection<OutputFile> dependencies) {
-        this(dependencies, dependencies.stream().findFirst().get());
+    public ExecutableStep() {
+        this(false);
     }
 
-    protected ExecutableStep(Collection<OutputFile> dependencies, OutputFile... otherDependencies) {
+    protected ExecutableStep(boolean add, Collection<OutputFile> dependencies) {
+        this(add, dependencies, dependencies.stream().findFirst().get());
+    }
+
+    protected ExecutableStep(boolean add, Collection<OutputFile> dependencies, OutputFile... otherDependencies) {
         Collection<OutputFile> combined = new HashSet<>(dependencies) {{
             addAll(List.of(otherDependencies));
         }};
@@ -64,6 +68,10 @@ public abstract class ExecutableStep implements EventListener {
 
         dependencyManager = new DependencyManager(combined, logger);
         hashManager = new HashManager(workingDirectory, logger, inputDirectory, outputDirectory);
+
+        if (add) {
+            combined.forEach(this::addInput);
+        }
     }
 
     public Collection<OutputFile> getOutputs() {
