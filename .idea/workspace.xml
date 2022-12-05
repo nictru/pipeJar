@@ -4,15 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9ca183ca-4b1b-4cf8-9a5d-f777a94d6a6c" name="Changes" comment="Some adaptions for TFPRIO">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ClassGetter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/RequiresOtherToBeTrueValidator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/steps/ConcatenateFiles.java" afterDir="false" />
+    <list default="true" id="9ca183ca-4b1b-4cf8-9a5d-f777a94d6a6c" name="Changes" comment="Some more adaptions for TFPRIO">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigModule.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigModule.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigModuleCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigModuleCollection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/ExactlyOneTrueValidator.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/configs/ConfigValidators/MultiValidator.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -123,6 +116,8 @@
       <workItem from="1670051054684" duration="2737000" />
       <workItem from="1670156458116" duration="892000" />
       <workItem from="1670222349485" duration="18000" />
+      <workItem from="1670230391925" duration="79000" />
+      <workItem from="1670233433218" duration="1700000" />
     </task>
     <task id="LOCAL-00001" summary="Implement option to use input configs as input files">
       <created>1667855564492</created>
@@ -159,7 +154,14 @@
       <option name="project" value="LOCAL" />
       <updated>1669892444517</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Some more adaptions for TFPRIO">
+      <created>1670230420247</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1670230420247</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -182,7 +184,8 @@
     <MESSAGE value="Improve ExecutableStep" />
     <MESSAGE value="Allow private fields of arbitrary type in executable step" />
     <MESSAGE value="Some adaptions for TFPRIO" />
-    <option name="LAST_COMMIT_MESSAGE" value="Some adaptions for TFPRIO" />
+    <MESSAGE value="Some more adaptions for TFPRIO" />
+    <option name="LAST_COMMIT_MESSAGE" value="Some more adaptions for TFPRIO" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

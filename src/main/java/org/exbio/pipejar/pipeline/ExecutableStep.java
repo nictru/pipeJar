@@ -12,10 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.EventListener;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -41,16 +38,20 @@ public abstract class ExecutableStep implements EventListener {
     }
 
     public ExecutableStep() {
-        this(false);
+        this(false, (OutputFile) null);
     }
 
     protected ExecutableStep(boolean add, Collection<OutputFile> dependencies) {
-        this(add, dependencies, dependencies.stream().findFirst().get());
+        this(add, dependencies, (OutputFile) null);
+    }
+
+    public ExecutableStep(boolean add, Collection<OutputFile>... dependencies) {
+        this(add, Arrays.stream(dependencies).flatMap(Collection::stream).toArray(OutputFile[]::new));
     }
 
     protected ExecutableStep(boolean add, Collection<OutputFile> dependencies, OutputFile... otherDependencies) {
         Collection<OutputFile> combined = new HashSet<>(dependencies) {{
-            addAll(List.of(otherDependencies));
+            Arrays.stream(otherDependencies).filter(Objects::nonNull).forEach(this::add);
         }};
         OutputFile workingDirectory =
                 new OutputFile(ExecutionManager.workingDirectory, this.getClass().getName().replace(".", "_"));
