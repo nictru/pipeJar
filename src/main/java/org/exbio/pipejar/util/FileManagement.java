@@ -271,4 +271,13 @@ public class FileManagement {
 
         return file.mkdir();
     }
+
+    public static void makeAllChildrenExecutable(File file) {
+        if (file.isDirectory()) {
+            for (File child : Objects.requireNonNull(file.listFiles())) {
+                makeAllChildrenExecutable(child);
+            }
+        }
+        file.setExecutable(true);
+    }
 }

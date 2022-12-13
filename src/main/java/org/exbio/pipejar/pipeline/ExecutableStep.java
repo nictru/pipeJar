@@ -14,6 +14,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -335,5 +339,33 @@ public abstract class ExecutableStep implements EventListener {
 
     Collection<OutputFile> getDependencies() {
         return dependencyManager.getDependencies();
+    }
+
+    public void copyResources(String source, final Path target) throws URISyntaxException, IOException {
+        URI resource = getClass().getResource("").toURI();
+        FileSystem fileSystem = FileSystems.newFileSystem(
+                resource,
+                Collections.<String, String>emptyMap()
+        );
+
+
+        final Path jarPath = fileSystem.getPath(source);
+
+        Files.walkFileTree(jarPath, new SimpleFileVisitor<>() {
+            private Path currentTarget;
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                currentTarget = target.resolve(jarPath.relativize(dir).toString());
+                Files.createDirectories(currentTarget);
+                return FileVisitResult.CONTINUE;
+            }
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                if (!file.getFileName().toString().endsWith(".class")) {
+                    Files.copy(file, target.resolve(jarPath.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 }
