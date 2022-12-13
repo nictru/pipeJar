@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9ca183ca-4b1b-4cf8-9a5d-f777a94d6a6c" name="Changes" comment="Some more adaptions for TFPRIO">
+    <list default="true" id="9ca183ca-4b1b-4cf8-9a5d-f777a94d6a6c" name="Changes" comment="Check">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/exbio/pipejar/pipeline/ExecutableStep.java" afterDir="false" />
     </list>
@@ -118,6 +118,10 @@
       <workItem from="1670222349485" duration="18000" />
       <workItem from="1670230391925" duration="79000" />
       <workItem from="1670233433218" duration="1700000" />
+      <workItem from="1670243609908" duration="37000" />
+      <workItem from="1670243658878" duration="9000" />
+      <workItem from="1670825989414" duration="6652000" />
+      <workItem from="1670943407143" duration="1001000" />
     </task>
     <task id="LOCAL-00001" summary="Implement option to use input configs as input files">
       <created>1667855564492</created>
@@ -161,7 +165,14 @@
       <option name="project" value="LOCAL" />
       <updated>1670230420247</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Some more adaptions for TFPRIO">
+      <created>1670243626423</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1670243626423</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

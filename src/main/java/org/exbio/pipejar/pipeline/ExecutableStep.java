@@ -9,7 +9,9 @@ import org.exbio.pipejar.util.ExecutionTimeMeasurement;
 import org.exbio.pipejar.util.FileManagement;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -107,7 +109,7 @@ public abstract class ExecutableStep implements EventListener {
                     makeSureDirectoryExists(outputDirectory);
                 }
                 boolean result = createFiles();
-                logger.trace("Finished creating files.");
+                logger.trace(result ? "Successfully finished creating files." : "Failed to create files.");
                 return result;
             } else {
                 logger.warn("Simulation failed.");
@@ -205,7 +207,7 @@ public abstract class ExecutableStep implements EventListener {
                             }
                         });
 
-                if (mayBeSkipped() && ExecutionManager.isHashingEnabled()) {
+                if (successful && mayBeSkipped() && ExecutionManager.isHashingEnabled()) {
                     hashManager.writeHashes(getConfigs());
                 }
             } else {
@@ -284,19 +286,16 @@ public abstract class ExecutableStep implements EventListener {
         if (!file.isSet()) {
             throw new IllegalArgumentException("Cannot add not-set file as input.");
         }
-        InputFile inputFile = new InputFile(inputDirectory, file.get().getName());
-        try {
-            deleteFileStructure(inputFile);
-            FileManagement.softLink(inputFile, file.get());
-        } catch (IOException e) {
-            logger.warn("Could not creat soft link: " + e.getMessage());
-        }
-
-        return inputFile;
+        OutputFile outputFile = new OutputFile(file.get().getAbsolutePath());
+        return addInput(outputFile);
     }
 
     protected InputFile addInput(OutputFile outputFile) {
-        InputFile inputFile = new InputFile(inputDirectory, outputFile);
+        return addInput(inputDirectory, outputFile);
+    }
+
+    protected InputFile addInput(OutputFile parent, OutputFile outputFile) {
+        InputFile inputFile = new InputFile(parent, outputFile);
         try {
             FileManagement.softLink(inputFile, outputFile);
         } catch (IOException e) {
@@ -307,6 +306,16 @@ public abstract class ExecutableStep implements EventListener {
         outputFile.addListener(this.dependencyManager);
 
         return inputFile;
+    }
+
+    protected InputFile addInput(InputStream stream, String name) {
+        InputFile target = new InputFile(inputDirectory, name);
+        try (FileOutputStream fos = new FileOutputStream(target)) {
+            fos.write(stream.readAllBytes());
+        } catch (IOException e) {
+            logger.warn("Could not copy stream to file: " + e.getMessage());
+        }
+        return target;
     }
 
     protected boolean mayBeSkipped() {
