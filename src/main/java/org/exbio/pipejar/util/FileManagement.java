@@ -251,7 +251,7 @@ public class FileManagement {
         }
 
         if (file.exists()) {
-            if (file.isDirectory() && Objects.requireNonNull(file.listFiles()).length > 0) {
+            if (file.isDirectory()) {
                 for (File subFile : Objects.requireNonNull(file.listFiles())) {
                     deleteFileStructure(subFile);
                 }

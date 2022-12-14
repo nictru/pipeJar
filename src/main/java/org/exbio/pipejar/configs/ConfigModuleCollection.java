@@ -138,7 +138,7 @@ public abstract class ConfigModuleCollection {
         if (allValid) {
             logger.info("Configs are valid.");
         } else {
-            logger.error("Configs are invalid..");
+            logger.error("Configs are invalid.");
         }
         return allValid;
     }

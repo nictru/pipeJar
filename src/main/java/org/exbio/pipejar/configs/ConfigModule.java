@@ -199,6 +199,7 @@ public abstract class ConfigModule {
             if (thisValid && config.isSet() && config.get().getClass().equals(File.class)) {
                 InputConfig<File> fileConfig = (InputConfig<File>) config;
                 if (fileConfig.isSet() && !fileConfig.get().exists()) {
+                    logger.warn("File does not exist: " + fileConfig.get().getAbsolutePath() + " (" + fileConfig.getName() + ")");
                     configsValid = false;
                 }
             }
