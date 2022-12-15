@@ -3,6 +3,7 @@ package org.exbio.pipejar.util;
 import org.exbio.pipejar.util.FileFilters.Filters;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,46 +34,22 @@ public class FileManagement {
     }
 
     public static void copyFile(File source, File target) throws IOException {
-        copyFile(source, target, false);
+        Files.copy(source.toPath(), target.toPath(), REPLACE_EXISTING);
     }
 
-
-    public static void copyFile(File source, File target, boolean compression) throws IOException {
-        if (target.exists()) {
-            return;
-        }
-
-        if (source.exists()) {
-            if (!target.getParentFile().exists()) {
-                target.getParentFile().mkdirs();
-            }
-
-            if (target.getName().endsWith(".png") && compression) {
-                String command =
-                        "pngtopnm " + source.getAbsolutePath().replace(" ", "\\ ") + " | pnmquant 16 | pnmtopng >" +
-                                " " + target.getAbsolutePath().replace(" ", "\\ ");
-                String[] cmd = {"/bin/sh", "-c", command};
-                Process child = Runtime.getRuntime().exec(cmd);
-                try {
-                    child.waitFor(5, TimeUnit.SECONDS);
-                } catch (InterruptedException ignored) {
-                }
-            } else {
-                Files.copy(source.toPath(), target.toPath(), REPLACE_EXISTING);
-            }
-        }
+    public static void copyDirectory(File source, File target) {
+        copyDirectory(source, target, file -> true);
     }
 
-    public static void copyDirectory(File source, File target, boolean compression) {
-        copyDirectory(source, target, compression, ".*", new ArrayList<>());
+    public static void copyDirectory(File source, File target, FileFilter filter) {
+        copyDirectory(source, target, filter, new ArrayList<>());
     }
 
-    public static void copyDirectory(File source, File target, boolean compression, String fileNameRegex,
+    public static void copyDirectory(File source, File target,  FileFilter filter,
                                      List<String> removables) {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
-        for (File sourceFile : Objects.requireNonNull(source.listFiles())) {
+        for (File sourceFile : Objects.requireNonNull(source.listFiles(filter))) {
             if (sourceFile.isFile()) {
-                if (sourceFile.getName().matches(fileNameRegex)) {
                     String cleanName = sourceFile.getName();
                     String fileExtension =
                             cleanName.contains(".") ? cleanName.substring(cleanName.lastIndexOf(".")) : "";
@@ -97,14 +74,13 @@ public class FileManagement {
                     executorService.execute(() ->
                     {
                         try {
-                            copyFile(sourceFile, targetFile, compression);
+                            copyFile(sourceFile, targetFile);
                         } catch (IOException ignored) {
                         }
                     });
-                }
             } else {
                 File subDir = new File(target.getAbsolutePath() + File.separator + sourceFile.getName());
-                copyDirectory(sourceFile, subDir, compression, fileNameRegex, removables);
+                copyDirectory(sourceFile, subDir, filter, removables);
             }
         }
         try {

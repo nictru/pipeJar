@@ -19,26 +19,9 @@ public class Hashing {
         return bytesToString(hashBytes);
     }
 
-    public static String hashDirectory(File directory) throws IOException {
-        if (!directory.exists() || !directory.isDirectory()) {
-            throw new IllegalArgumentException("Can only work with existing directories.");
-        }
-        return hashFiles(List.of(directory));
-    }
-
-    public static String hashFiles(List<File> files) throws IOException {
-        return hashFiles(true, files);
-    }
-
-    public static String hashFiles(boolean includeHiddenFiles, List<File> files) throws IOException {
-        if (files.size() > 1) {
-            files.sort(new FileComparator());
-        }
+    public static String hashFile(File file) throws IOException {
         Vector<FileInputStream> fileStreams = new Vector<>();
-
-        for (File file : files) {
-            collectInputStreams(file, fileStreams, includeHiddenFiles);
-        }
+        collectInputStreams(file, fileStreams);
 
         MessageDigest md = getMessageDigest();
         try (SequenceInputStream seqStream = new SequenceInputStream(fileStreams.elements());
@@ -51,21 +34,18 @@ public class Hashing {
         return bytesToString(md.digest());
     }
 
-    private static void collectInputStreams(File file, Collection<FileInputStream> foundStreams,
-                                            boolean includeHiddenFiles) throws FileNotFoundException {
-        
-        if (file.isFile() && (includeHiddenFiles || !file.isHidden())) {
+    private static void collectInputStreams(File file, Collection<FileInputStream> foundStreams) throws FileNotFoundException {
+        if (file.isFile()) {
             foundStreams.add(new FileInputStream(file));
-        } else if (file.isDirectory()) {
+        } else {
             File[] fileList = file.listFiles();
-            assert fileList != null;
-            Arrays.sort(fileList, new FileComparator());
 
-            for (File f : fileList) {
-                if (!includeHiddenFiles && f.isHidden()) {
-                    continue;
+            if (fileList != null) {
+                Arrays.sort(fileList, new FileComparator());
+
+                for (File f : fileList) {
+                    collectInputStreams(f, foundStreams);
                 }
-                collectInputStreams(f, foundStreams, includeHiddenFiles);
             }
         }
     }

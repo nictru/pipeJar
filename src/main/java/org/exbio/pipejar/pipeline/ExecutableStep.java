@@ -168,10 +168,6 @@ public abstract class ExecutableStep implements EventListener {
         return true;
     }
 
-    private void clearOutputs() {
-
-    }
-
     /**
      * Wraps the executableStep execution with some framework checks.
      * <p>
@@ -211,7 +207,7 @@ public abstract class ExecutableStep implements EventListener {
                             }
                         });
 
-                if (successful && mayBeSkipped() && ExecutionManager.isHashingEnabled()) {
+                if (successful) {
                     hashManager.writeHashes(getConfigs());
                 }
             } else {
@@ -342,30 +338,33 @@ public abstract class ExecutableStep implements EventListener {
     }
 
     public void copyResources(String source, final Path target) throws URISyntaxException, IOException {
-        URI resource = getClass().getResource("").toURI();
-        FileSystem fileSystem = FileSystems.newFileSystem(
+        URI resource = Objects.requireNonNull(getClass().getResource("")).toURI();
+
+        try (FileSystem fileSystem = FileSystems.newFileSystem(
                 resource,
                 Collections.<String, String>emptyMap()
-        );
+        )) {
+            final Path jarPath = fileSystem.getPath(source);
 
+            Files.walkFileTree(jarPath, new SimpleFileVisitor<>() {
+                private Path currentTarget;
 
-        final Path jarPath = fileSystem.getPath(source);
-
-        Files.walkFileTree(jarPath, new SimpleFileVisitor<>() {
-            private Path currentTarget;
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                currentTarget = target.resolve(jarPath.relativize(dir).toString());
-                Files.createDirectories(currentTarget);
-                return FileVisitResult.CONTINUE;
-            }
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                if (!file.getFileName().toString().endsWith(".class")) {
-                    Files.copy(file, target.resolve(jarPath.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING);
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    currentTarget = target.resolve(jarPath.relativize(dir).toString());
+                    Files.createDirectories(currentTarget);
+                    return FileVisitResult.CONTINUE;
                 }
-                return FileVisitResult.CONTINUE;
-            }
-        });
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    if (!file.getFileName().toString().endsWith(".class")) {
+                        Files.copy(file, target.resolve(jarPath.relativize(file).toString()),
+                                StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        }
     }
 }

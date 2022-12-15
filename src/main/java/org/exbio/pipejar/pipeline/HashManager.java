@@ -83,7 +83,7 @@ public class HashManager {
 
     private String hashDirectory(File file) {
         try {
-            return file.exists() ? Hashing.hashDirectory(file) : "";
+            return file.exists() ? Hashing.hashFile(file) : "";
         } catch (IOException e) {
             logger.warn("Could not calculate input hash");
             throw new RuntimeException(e);
