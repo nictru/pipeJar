@@ -50,19 +50,22 @@ public class HashManager {
     boolean validateHashes(Collection<UsageConfig<?>> configs) {
         logger.debug("Validating hash...");
 
-        boolean configMatches = oldConfigHash.equals(hashConfigs(configs));
+        String configHash = hashConfigs(configs);
+        boolean configMatches = oldConfigHash.equals(configHash);
         if (!configMatches) {
-            logger.debug("Configs changed");
+            logger.debug("Configs changed. Newly calculated hash: " + configHash);
         }
 
-        boolean inputMatches = oldInputHash.equals(hashDirectory(inputDirectory));
+        String inputHash = hashDirectory(inputDirectory);
+        boolean inputMatches = oldInputHash.equals(inputHash);
         if (!inputMatches) {
-            logger.debug("Input changed");
+            logger.debug("Input changed. Newly calculated hash: " + inputHash);
         }
 
-        boolean outputMatches = oldOutputHash.equals(hashDirectory(outputDirectory));
+        String outputHash = hashDirectory(outputDirectory);
+        boolean outputMatches = oldOutputHash.equals(outputHash);
         if (!outputMatches) {
-            logger.debug("Output changed");
+            logger.debug("Output changed. Newly calculated hash: " + outputHash);
         }
 
         return configMatches && inputMatches && outputMatches;

@@ -34,61 +34,21 @@ public class FileManagement {
     }
 
     public static void copyFile(File source, File target) throws IOException {
+        target.getParentFile().mkdirs();
         Files.copy(source.toPath(), target.toPath(), REPLACE_EXISTING);
     }
 
-    public static void copyDirectory(File source, File target) {
+    public static void copyDirectory(File source, File target) throws IOException {
         copyDirectory(source, target, file -> true);
     }
 
-    public static void copyDirectory(File source, File target, FileFilter filter) {
-        copyDirectory(source, target, filter, new ArrayList<>());
-    }
-
-    public static void copyDirectory(File source, File target,  FileFilter filter,
-                                     List<String> removables) {
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+    public static void copyDirectory(File source, File target,  FileFilter filter) throws IOException {
         for (File sourceFile : Objects.requireNonNull(source.listFiles(filter))) {
             if (sourceFile.isFile()) {
-                    String cleanName = sourceFile.getName();
-                    String fileExtension =
-                            cleanName.contains(".") ? cleanName.substring(cleanName.lastIndexOf(".")) : "";
-
-                    cleanName = cleanName.replace(fileExtension, "");
-
-                    for (String removable : removables) {
-                        cleanName = cleanName.replace(removable, "");
-                    }
-
-                    while (cleanName.contains("__")) {
-                        cleanName = cleanName.replace("__", "_");
-                    }
-                    while (cleanName.startsWith("_")) {
-                        cleanName = cleanName.substring(1);
-                    }
-                    while (cleanName.endsWith("_")) {
-                        cleanName = cleanName.substring(0, cleanName.length() - 1);
-                    }
-                    cleanName = cleanName + fileExtension;
-                    File targetFile = new File(target.getAbsolutePath() + File.separator + cleanName);
-                    executorService.execute(() ->
-                    {
-                        try {
-                            copyFile(sourceFile, targetFile);
-                        } catch (IOException ignored) {
-                        }
-                    });
+                copyFile(sourceFile, extend(target, sourceFile.getName()));
             } else {
-                File subDir = new File(target.getAbsolutePath() + File.separator + sourceFile.getName());
-                copyDirectory(sourceFile, subDir, filter, removables);
+                copyDirectory(sourceFile, extend(target, sourceFile.getName()), filter);
             }
-        }
-        try {
-            executorService.shutdown();
-            executorService.awaitTermination(30, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            System.out.println("[REPORT] Error during copy process: " + source.getAbsolutePath() + " to " +
-                    target.getAbsolutePath());
         }
     }
 

@@ -20,8 +20,12 @@ public class Hashing {
     }
 
     public static String hashFile(File file) throws IOException {
+        return hashFile(file, pathname -> pathname.isFile() || !pathname.getName().equals("__pycache__"));
+    }
+
+    public static String hashFile(File file, FileFilter filter) throws IOException {
         Vector<FileInputStream> fileStreams = new Vector<>();
-        collectInputStreams(file, fileStreams);
+        collectInputStreams(file, fileStreams, filter);
 
         MessageDigest md = getMessageDigest();
         try (SequenceInputStream seqStream = new SequenceInputStream(fileStreams.elements());
@@ -34,17 +38,17 @@ public class Hashing {
         return bytesToString(md.digest());
     }
 
-    private static void collectInputStreams(File file, Collection<FileInputStream> foundStreams) throws FileNotFoundException {
+    private static void collectInputStreams(File file, Collection<FileInputStream> foundStreams, FileFilter filter) throws FileNotFoundException {
         if (file.isFile()) {
             foundStreams.add(new FileInputStream(file));
         } else {
-            File[] fileList = file.listFiles();
+            File[] fileList = file.listFiles(filter);
 
             if (fileList != null) {
                 Arrays.sort(fileList, new FileComparator());
 
                 for (File f : fileList) {
-                    collectInputStreams(f, foundStreams);
+                    collectInputStreams(f, foundStreams, filter);
                 }
             }
         }
