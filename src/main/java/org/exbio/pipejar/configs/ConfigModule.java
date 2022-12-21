@@ -57,20 +57,21 @@ public abstract class ConfigModule {
      */
     private void initSubmodules()
             throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        // Get all fields inside the class extending the AbstractModule class
+        // Get all fields inside the class extending the ConfigModule class
         Field[] fields = this.getClass().getFields();
         for (Field field : fields) {
             Class<?> superClass = field.getType().getSuperclass();
 
-            // If the field superclass is AbstractModule
+            // If the field superclass is ConfigModule, then it is a submodule
             if (superClass != null && superClass.equals(ConfigModule.class)) {
                 // Call the default constructor with the same argument as this object has been created
-                ConfigModule module = (ConfigModule) field.getType().getConstructor(Logger.class).newInstance(logger);
+                ConfigModule module = (ConfigModule) field.getType().getConstructor().newInstance();
                 // Assign the created object to this object
                 field.set(this, module);
 
                 // Add the created object to the submodule map
                 subModules.put(field.getType().getSimpleName(), module);
+                module.init();
             }
         }
     }
@@ -100,7 +101,7 @@ public abstract class ConfigModule {
     public boolean merge(JSONObject mergeObject) {
         boolean worked = true;
         for (String key : mergeObject.keySet()) {
-            if (mergeObject.get(key).getClass().equals(JSONObject.class) && subModules.containsKey(key)) {
+            if (subModules.containsKey(key)) {
                 // Merge configs to a submodule
                 try {
                     subModules.get(key).merge(mergeObject.getJSONObject(key));
@@ -120,6 +121,7 @@ public abstract class ConfigModule {
                 // Key is neither a submodule nor an entry
                 worked = false;
                 logger.warn(this.getClass().getSimpleName() + ": Trying to set unknown config: " + key);
+                logger.warn("Known configs: " + entries.keySet() + ", known submodules: " + subModules.keySet());
             }
         }
         return worked;

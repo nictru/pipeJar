@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class StringListValidator extends Validator<List<String>> {
+public class StringListValidator extends SingleValidator<List<String>> {
     private final Set<String> allowedValues;
 
     public StringListValidator(String... allowedValues) {
@@ -14,7 +14,7 @@ public class StringListValidator extends Validator<List<String>> {
     }
 
     @Override
-    public boolean validate(InputConfig<List<String>> config) {
+    public boolean validateSingle(InputConfig<List<String>> config) {
         return allowedValues.containsAll(config.get());
     }
 

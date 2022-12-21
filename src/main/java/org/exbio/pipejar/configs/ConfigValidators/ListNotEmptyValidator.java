@@ -4,9 +4,9 @@ import org.exbio.pipejar.configs.ConfigTypes.InputTypes.InputConfig;
 
 import java.util.List;
 
-public class ListNotEmptyValidator<T> extends Validator<List<T>> {
+public class ListNotEmptyValidator<T> extends SingleValidator<List<T>> {
     @Override
-    public boolean validate(InputConfig<List<T>> config) {
+    public boolean validateSingle(InputConfig<List<T>> config) {
         if (config.get() == null) {
             return true;
         }

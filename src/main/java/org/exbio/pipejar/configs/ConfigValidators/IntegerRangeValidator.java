@@ -2,7 +2,7 @@ package org.exbio.pipejar.configs.ConfigValidators;
 
 import org.exbio.pipejar.configs.ConfigTypes.InputTypes.InputConfig;
 
-public class IntegerRangeValidator extends Validator<Integer> {
+public class IntegerRangeValidator extends SingleValidator<Integer> {
     private final int min, max;
 
     public IntegerRangeValidator(int min, int max) {
@@ -11,7 +11,7 @@ public class IntegerRangeValidator extends Validator<Integer> {
     }
 
     @Override
-    public boolean validate(InputConfig<Integer> config) {
+    public boolean validateSingle(InputConfig<Integer> config) {
         if (config.get() == null) {
             return true;
         }

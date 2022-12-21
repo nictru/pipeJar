@@ -2,9 +2,9 @@ package org.exbio.pipejar.configs.ConfigValidators;
 
 import org.exbio.pipejar.configs.ConfigTypes.InputTypes.InputConfig;
 
-public class PositiveDoubleValidator extends Validator<Double> {
+public class PositiveDoubleValidator extends SingleValidator<Double> {
     @Override
-    public boolean validate(InputConfig<Double> config) {
+    public boolean validateSingle(InputConfig<Double> config) {
         if (config.isSet()) {
             return config.get() > 0;
         }

@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class StringValidator extends Validator<String> {
+public class StringValidator extends SingleValidator<String> {
     private final Set<String> allowedValues;
 
     public StringValidator(String... allowedValues) {
@@ -14,7 +14,7 @@ public class StringValidator extends Validator<String> {
     }
 
     @Override
-    public boolean validate(InputConfig<String> config) {
+    public boolean validateSingle(InputConfig<String> config) {
         if (!config.isSet()) {
             return true;
         }

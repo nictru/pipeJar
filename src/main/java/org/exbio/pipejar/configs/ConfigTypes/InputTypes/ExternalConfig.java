@@ -1,6 +1,5 @@
 package org.exbio.pipejar.configs.ConfigTypes.InputTypes;
 
-import org.exbio.pipejar.configs.ConfigTypes.FileTypes.InputFile;
 import org.exbio.pipejar.configs.ConfigValidators.Validator;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
