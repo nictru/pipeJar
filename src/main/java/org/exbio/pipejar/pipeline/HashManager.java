@@ -50,6 +50,11 @@ public class HashManager {
     boolean validateHashes(Collection<UsageConfig<?>> configs) {
         logger.debug("Validating hash...");
 
+        if (oldConfigHash.isEmpty() || oldInputHash.isEmpty() || oldOutputHash.isEmpty()) {
+            logger.debug("No hashes found, skipping validation");
+            return false;
+        }
+
         String configHash = hashConfigs(configs);
         boolean configMatches = oldConfigHash.equals(configHash);
         if (!configMatches) {
