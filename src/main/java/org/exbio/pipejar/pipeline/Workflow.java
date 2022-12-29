@@ -1,6 +1,8 @@
 package org.exbio.pipejar.pipeline;
 
 import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exbio.pipejar.configs.ConfigModuleCollection;
 import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
 
@@ -15,6 +17,8 @@ public abstract class Workflow<C extends ConfigModuleCollection> {
     private final Collection<ExecutableStep> steps = new HashSet<>();
     public File workingDirectory;
     public C configs;
+    protected final Logger logger = LogManager.getLogger(this.getClass());
+
 
     public Workflow(String[] args) throws IOException, ParseException {
         ArgParser argParser = new ArgParser(args);
