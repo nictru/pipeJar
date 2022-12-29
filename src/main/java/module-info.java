@@ -1,6 +1,7 @@
 module pipeJar {
     requires org.apache.logging.log4j;
     requires org.json;
+    requires commons.cli;
 
     exports org.exbio.pipejar.pipeline;
     exports org.exbio.pipejar.configs;
