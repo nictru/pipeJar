@@ -180,21 +180,21 @@ public abstract class ExecutableStep implements EventListener {
                 return false;
             }
 
-            logger.info("Fetching callables.");
-            Collection<Callable<Boolean>> callables = getCallables();
-
-            if (callables == null || callables.size() == 0) {
-                logger.error("No callables found");
-                return false;
-            } else {
-                logger.info("Found " + callables.size() + " callable(s).");
-            }
-
             ExecutionTimeMeasurement timer = new ExecutionTimeMeasurement();
 
             boolean successful;
 
             if (!skip) {
+                logger.info("Fetching callables.");
+                Collection<Callable<Boolean>> callables = getCallables();
+
+                if (callables == null || callables.size() == 0) {
+                    logger.error("No callables found");
+                    return false;
+                } else {
+                    logger.info("Found " + callables.size() + " callable(s).");
+                }
+
                 logger.debug("Execution starting.");
 
                 successful =
