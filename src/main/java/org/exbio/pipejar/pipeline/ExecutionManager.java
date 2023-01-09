@@ -94,7 +94,7 @@ public class ExecutionManager {
 
         steps.forEach(step -> futures.add(function.apply(step)));
 
-        logger.info("Execution of all features started.");
+        logger.info("Execution of all callables started.");
 
         boolean allGood = futures.stream().allMatch(future -> {
             try {

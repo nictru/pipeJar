@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import static org.exbio.pipejar.util.FileManagement.deleteFileStructure;
 import static org.exbio.pipejar.util.FileManagement.makeSureDirectoryExists;
@@ -237,9 +238,9 @@ public abstract class ExecutableStep implements EventListener {
         Collection<UsageConfig<?>> configs = new HashSet<>();
         for (Field field : this.getClass().getDeclaredFields()) {
 
-            if (!Modifier.isPrivate(field.getModifiers()) && !field.getName().equals("outputFiles") &&
-                    field.getType().getSuperclass().equals(UsageConfig.class)) {
+            if (field.getType().getSuperclass() != null && field.getType().getSuperclass().equals(UsageConfig.class)) {
                 try {
+                    field.setAccessible(true);
                     configs.add((UsageConfig<?>) field.get(this));
                 } catch (IllegalAccessException e) {
                     logger.error(e.getMessage());
@@ -265,6 +266,8 @@ public abstract class ExecutableStep implements EventListener {
      */
     private boolean checkRequirements() {
         return getConfigs().stream().allMatch(config -> {
+
+            logger.trace("Checking config: " + config.getName());
             boolean result = !config.isRequired() || config.isSet();
             if (!result) {
                 logger.warn("A required config is not set: " + config.getName());

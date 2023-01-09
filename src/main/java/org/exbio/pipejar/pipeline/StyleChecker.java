@@ -54,52 +54,13 @@ public class StyleChecker {
             });
             // Config modifiers
             add(field -> {
-                if (Modifier.isPrivate(field.getModifiers()) || field.getName().equals("outputFiles") ||
-                        !field.getType().getSuperclass().equals(UsageConfig.class)) {
+                if (field.getType().getSuperclass() == null || !field.getType().getSuperclass().equals(UsageConfig.class)) {
                     return true;
                 }
                 int modifier = field.getModifiers();
-                if (!Modifier.isPublic(modifier) || !Modifier.isFinal(modifier)) {
+                if (!Modifier.isPrivate(modifier) || !Modifier.isFinal(modifier)) {
                     logger.warn(field.getClass().getSimpleName() + " \"" + field.getName() + "\" in " +
-                            step.getClass().getName() + " must be public and final.");
-                    return false;
-                }
-                return true;
-            });
-            // Output file modifiers and updating
-            add(field -> {
-                if (!field.getType().equals(OutputFile.class)) {
-                    return true;
-                }
-                int modifier = field.getModifiers();
-                if (!Modifier.isPublic(modifier) || !Modifier.isFinal(modifier)) {
-                    logger.warn("OutputFile \"" + field.getName() + "\" in " + step.getClass().getName() +
-                            " must be public and final.");
-                    return false;
-                }
-                try {
-                    OutputFile outputFile = (OutputFile) field.get(step);
-                    if (!step.getOutputs().contains(outputFile)) {
-                        logger.warn("Outputfile \"" + field.getName() +
-                                "\" has not been created using the \"addOutput()\" method in " +
-                                step.getClass().getName());
-                        return false;
-                    }
-                } catch (IllegalAccessException e) {
-                    logger.error(e.getMessage());
-                    return false;
-                }
-                return true;
-            });
-            // Field type
-            add(field -> {
-                Set<Class<?>> allowedTypes = new HashSet<>(
-                        List.of(OptionalConfig.class, RequiredConfig.class, InputFile.class, OutputFile.class));
-                if (!Modifier.isPrivate(field.getModifiers()) && !allowedTypes.contains(field.getType()) &&
-                        !field.getName().equals("outputFiles")) {
-                    logger.warn("Field \"" + field.getName() + "\" in " + step.getClass().getName() +
-                            " has a forbidden type: " + field.getType().getName() + ". Allowed types are: " +
-                            allowedTypes.stream().map(Class::getSimpleName).collect(Collectors.toSet()));
+                            step.getClass().getName() + " must be private and final.");
                     return false;
                 }
                 return true;
