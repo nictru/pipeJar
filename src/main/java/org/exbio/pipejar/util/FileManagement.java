@@ -7,14 +7,12 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -42,7 +40,7 @@ public class FileManagement {
         copyDirectory(source, target, file -> true);
     }
 
-    public static void copyDirectory(File source, File target,  FileFilter filter) throws IOException {
+    public static void copyDirectory(File source, File target, FileFilter filter) throws IOException {
         for (File sourceFile : Objects.requireNonNull(source.listFiles(filter))) {
             if (sourceFile.isFile()) {
                 copyFile(sourceFile, extend(target, sourceFile.getName()));
@@ -118,7 +116,8 @@ public class FileManagement {
                     throw new IOException("file");
                 }
             } catch (IOException e) {
-                throw new IOException("Exception during " + e.getMessage() + " creation: " + file.getAbsolutePath());
+                throw new IOException(
+                        "Exception during creation of: " + file.getAbsolutePath() + " (" + e.getMessage() + ")");
             }
         }
     }
@@ -176,7 +175,12 @@ public class FileManagement {
         if (newLink.exists()) {
             Files.delete(newLink.toPath());
         }
-        Files.createSymbolicLink(newLink.toPath(), existingData.toPath());
+
+        Path source = existingData.toPath();
+        Path link = newLink.toPath();
+        Path relativeSource = link.getParent().relativize(source);
+
+        Files.createSymbolicLink(link, relativeSource);
     }
 
 
