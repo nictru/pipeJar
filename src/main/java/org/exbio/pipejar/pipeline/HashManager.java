@@ -1,8 +1,8 @@
 package org.exbio.pipejar.pipeline;
 
+import org.apache.logging.log4j.Logger;
 import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
 import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.UsageConfig;
-import org.apache.logging.log4j.Logger;
 import org.exbio.pipejar.util.FileManagement;
 import org.exbio.pipejar.util.Hashing;
 
@@ -47,12 +47,17 @@ public class HashManager {
         return "";
     }
 
-    boolean validateHashes(Collection<UsageConfig<?>> configs) {
+    boolean validateHashes(Collection<UsageConfig<?>> configs, boolean acceptAll) {
         logger.debug("Validating hash...");
 
         if (oldConfigHash.isEmpty() || oldInputHash.isEmpty() || oldOutputHash.isEmpty()) {
             logger.debug("No hashes found, skipping validation");
             return false;
+        }
+
+        if (acceptAll) {
+            logger.debug("Accepting all hashes, skipping validation");
+            return true;
         }
 
         String configHash = hashConfigs(configs);

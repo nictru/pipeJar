@@ -1,7 +1,7 @@
 package org.exbio.pipejar.steps;
 
 import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
-import org.exbio.pipejar.pipeline.ExecutableStep;
+import org.exbio.pipejar.pipeline.ExecutableStepWithoutConfigs;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
 
 import static org.exbio.pipejar.util.FileManagement.readLines;
 
-public class ConcatenateFiles extends ExecutableStep {
+public class ConcatenateFiles extends ExecutableStepWithoutConfigs {
     public final OutputFile outputFile;
 
     public ConcatenateFiles(Collection<OutputFile> dependencies) {

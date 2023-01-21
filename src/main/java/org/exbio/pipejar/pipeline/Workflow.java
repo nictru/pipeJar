@@ -14,17 +14,20 @@ import java.util.HashSet;
 import static org.exbio.pipejar.util.FileManagement.extend;
 
 public abstract class Workflow<C extends ConfigModuleCollection> {
-    private final Collection<ExecutableStep> steps = new HashSet<>();
+    protected final Logger logger = LogManager.getLogger(this.getClass());
+    private final Collection<ExecutableStep<?>> steps = new HashSet<>();
     public File workingDirectory;
     public C configs;
-    protected final Logger logger = LogManager.getLogger(this.getClass());
 
 
     public Workflow(String[] args) throws IOException, ParseException {
         ArgParser argParser = new ArgParser(args);
         init(argParser);
+        logger.debug("Building workflow...");
         buildFlow();
+        logger.debug("Workflow built. Executing...");
         execute();
+        logger.debug("Workflow executed");
     }
 
     private void init(ArgParser argParser) throws IOException {
@@ -34,6 +37,7 @@ public abstract class Workflow<C extends ConfigModuleCollection> {
         ExecutionManager.setThreadNumber(argParser.getThreadNumber());
 
         configs = createConfigs();
+        configs.init();
 
         if (!configs.merge(configFile) || !configs.validate()) {
             System.exit(1);
@@ -44,6 +48,7 @@ public abstract class Workflow<C extends ConfigModuleCollection> {
     protected abstract C createConfigs();
 
     protected abstract void buildFlow();
+
     private void execute() {
         ExecutionManager manager = new ExecutionManager(steps);
         manager.run();

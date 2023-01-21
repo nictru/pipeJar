@@ -26,7 +26,9 @@ public abstract class ConfigModuleCollection {
      */
     public ConfigModuleCollection() {
         logger = LogManager.getLogger(this.getClass());
+    }
 
+    public void init() {
         // Iterate all the fields inside this class
         Field[] fields = this.getClass().getDeclaredFields();
         for (Field field : fields) {

@@ -2,6 +2,7 @@ package org.exbio.pipejar.pipeline;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exbio.pipejar.configs.ConfigModuleCollection;
 import org.exbio.pipejar.configs.ConfigTypes.FileTypes.InputFile;
 import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
 import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.UsageConfig;
@@ -13,7 +14,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.*;
@@ -22,41 +22,45 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 import static org.exbio.pipejar.util.FileManagement.deleteFileStructure;
 import static org.exbio.pipejar.util.FileManagement.makeSureDirectoryExists;
 
-public abstract class ExecutableStep implements EventListener {
+public abstract class ExecutableStep<C extends ConfigModuleCollection> implements EventListener {
+    private static boolean acceptAllInputs = false;
     /**
      * The logger of this ExecutableStep.
      */
     protected final Logger logger = LogManager.getLogger(this.getClass());
     protected final OutputFile inputDirectory, outputDirectory;
+    protected final C configs;
     private final DependencyManager dependencyManager;
     private final HashManager hashManager;
-
     private final Collection<OutputFile> outputs = new HashSet<>();
     private final Collection<InputFile> inputs = new HashSet<>();
+    private boolean underDevelopment = false;
     private boolean skip = false;
 
-    protected ExecutableStep(boolean add, OutputFile... dependencies) {
-        this(add, new HashSet<>(), dependencies);
+    protected ExecutableStep(C configs, boolean add, OutputFile... dependencies) {
+        this(configs, add, new HashSet<>(), dependencies);
     }
 
-    public ExecutableStep() {
-        this(false, (OutputFile) null);
+    public ExecutableStep(C configs) {
+        this(configs, false, (OutputFile) null);
     }
 
-    protected ExecutableStep(boolean add, Collection<OutputFile> dependencies) {
-        this(add, dependencies, (OutputFile) null);
+    protected ExecutableStep(C configs, boolean add, Collection<OutputFile> dependencies) {
+        this(configs, add, dependencies, (OutputFile) null);
     }
 
-    public ExecutableStep(boolean add, Collection<OutputFile>... dependencies) {
-        this(add, Arrays.stream(dependencies).flatMap(Collection::stream).toArray(OutputFile[]::new));
+    public ExecutableStep(C configs, boolean add, Collection<OutputFile>... dependencies) {
+        this(configs, add, Arrays.stream(dependencies).flatMap(Collection::stream).toArray(OutputFile[]::new));
     }
 
-    protected ExecutableStep(boolean add, Collection<OutputFile> dependencies, OutputFile... otherDependencies) {
+    protected ExecutableStep(C configs, boolean add, Collection<OutputFile> dependencies,
+                             OutputFile... otherDependencies) {
+        logger.trace("Creating ExecutableStep: " + this.getClass().getSimpleName());
+        this.configs = configs;
         Collection<OutputFile> combined = new HashSet<>(dependencies) {{
             Arrays.stream(otherDependencies).filter(Objects::nonNull).forEach(this::add);
         }};
@@ -80,6 +84,10 @@ public abstract class ExecutableStep implements EventListener {
         if (add) {
             combined.forEach(this::addInput);
         }
+    }
+
+    public static void setAcceptAllInputs() {
+        acceptAllInputs = true;
     }
 
     public Collection<OutputFile> getOutputs() {
@@ -107,7 +115,8 @@ public abstract class ExecutableStep implements EventListener {
             if (checkRequirements()) {
                 logger.debug("Simulation successful.");
                 markOutputsAs(OutputFile.states.WillBeCreated);
-                if (mayBeSkipped() && ExecutionManager.isHashingEnabled() && hashManager.validateHashes(getConfigs())) {
+                if (!underDevelopment && mayBeSkipped() && ExecutionManager.isHashingEnabled() &&
+                        hashManager.validateHashes(getConfigs(), acceptAllInputs)) {
                     skip = true;
                 } else {
                     deleteFileStructure(outputDirectory);
@@ -336,6 +345,10 @@ public abstract class ExecutableStep implements EventListener {
         return output;
     }
 
+    public void setUnderDevelopment() {
+        this.underDevelopment = true;
+    }
+
     Collection<OutputFile> getDependencies() {
         return dependencyManager.getDependencies();
     }
@@ -343,10 +356,7 @@ public abstract class ExecutableStep implements EventListener {
     public void copyResources(String source, final Path target) throws URISyntaxException, IOException {
         URI resource = Objects.requireNonNull(getClass().getResource("")).toURI();
 
-        try (FileSystem fileSystem = FileSystems.newFileSystem(
-                resource,
-                Collections.<String, String>emptyMap()
-        )) {
+        try (FileSystem fileSystem = FileSystems.newFileSystem(resource, Collections.<String, String>emptyMap())) {
             final Path jarPath = fileSystem.getPath(source);
 
             Files.walkFileTree(jarPath, new SimpleFileVisitor<>() {

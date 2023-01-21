@@ -17,13 +17,13 @@ public class ExecutionManager {
     private static ExecutorService performancePool;
     private static boolean hashingEnabled = true;
     private final Logger logger = LogManager.getLogger(ExecutionManager.class);
-    private final Collection<ExecutableStep> steps;
+    private final Collection<ExecutableStep<?>> steps;
 
-    public ExecutionManager(ExecutableStep... steps) {
+    public ExecutionManager(ExecutableStep<?>... steps) {
         this(List.of(steps));
     }
 
-    public ExecutionManager(Collection<ExecutableStep> steps) {
+    public ExecutionManager(Collection<ExecutableStep<?>> steps) {
         this.steps = steps;
         if (new StyleChecker().check(steps)) {
             logger.info("Style checks finished successfully.");

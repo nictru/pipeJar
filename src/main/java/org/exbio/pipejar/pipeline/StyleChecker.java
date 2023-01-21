@@ -3,21 +3,19 @@ package org.exbio.pipejar.pipeline;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exbio.pipejar.configs.ConfigTypes.FileTypes.InputFile;
-import org.exbio.pipejar.configs.ConfigTypes.FileTypes.OutputFile;
-import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.OptionalConfig;
-import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.RequiredConfig;
 import org.exbio.pipejar.configs.ConfigTypes.UsageTypes.UsageConfig;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class StyleChecker {
     private final Logger logger = LogManager.getLogger(this.getClass());
 
-    public boolean check(Collection<ExecutableStep> steps) {
+    public boolean check(Collection<ExecutableStep<?>> steps) {
         return checkSteps(steps) && checkExecutionManager();
     }
 
@@ -33,11 +31,11 @@ public class StyleChecker {
         return true;
     }
 
-    private boolean checkSteps(Collection<ExecutableStep> steps) {
+    private boolean checkSteps(Collection<ExecutableStep<?>> steps) {
         return steps.stream().allMatch(this::checkStep);
     }
 
-    private boolean checkStep(ExecutableStep step) {
+    private boolean checkStep(ExecutableStep<?> step) {
         Collection<Function<Field, Boolean>> checks = new HashSet<>() {{
             // Input file modifiers
             add(field -> {
@@ -54,7 +52,8 @@ public class StyleChecker {
             });
             // Config modifiers
             add(field -> {
-                if (field.getType().getSuperclass() == null || !field.getType().getSuperclass().equals(UsageConfig.class)) {
+                if (field.getType().getSuperclass() == null ||
+                        !field.getType().getSuperclass().equals(UsageConfig.class)) {
                     return true;
                 }
                 int modifier = field.getModifiers();
