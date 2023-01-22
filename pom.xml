@@ -43,4 +43,8 @@
             </plugins>
         </pluginManagement>
     </build>
+    <distributionManagement>
+             <downloadUrl>test.com/project</downloadUrl>
+             <status>deployed</status>
+    </distributionManagement>
 </project>
