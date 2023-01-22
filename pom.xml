@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -43,11 +43,11 @@
             </plugins>
         </pluginManagement>
     </build>
-<distributionManagement>
-   <repository>
-     <id>github</id>
-     <name>GitHub nictru Apache Maven Packages</name>
-     <url>https://maven.pkg.github.com/nictru/pipeJar</url>
-   </repository>
-</distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub package</name>
+            <url>https://maven.pkg.github.com/biomedbigdata/pipeJar</url>
+        </repository>
+    </distributionManagement>
 </project>
