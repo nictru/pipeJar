@@ -43,7 +43,11 @@
             </plugins>
         </pluginManagement>
     </build>
-    <distributionManagement>
-             <downloadUrl>test.com/project</downloadUrl>
-    </distributionManagement>
+<distributionManagement>
+   <repository>
+     <id>github</id>
+     <name>GitHub nictru Apache Maven Packages</name>
+     <url>https://maven.pkg.github.com/nictru/pipeJar</url>
+   </repository>
+</distributionManagement>
 </project>
