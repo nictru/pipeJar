@@ -199,8 +199,9 @@ public abstract class ExecutableStep<C extends ConfigModuleCollection> implement
                 Collection<Callable<Boolean>> callables = getCallables();
 
                 if (callables == null || callables.size() == 0) {
-                    logger.error("No callables found");
-                    return false;
+                    logger.warn("No callables found");
+                    markOutputsAs(OutputFile.states.Created);
+                    return true;
                 } else {
                     logger.info("Found " + callables.size() + " callable(s).");
                 }

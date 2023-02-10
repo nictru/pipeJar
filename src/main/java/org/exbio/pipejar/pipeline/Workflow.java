@@ -54,7 +54,7 @@ public abstract class Workflow<C extends ConfigModuleCollection> {
         manager.run();
     }
 
-    protected <T extends ExecutableStep> T add(T step) {
+    protected <T extends ExecutableStep<? extends ConfigModuleCollection>> T add(T step) {
         steps.add(step);
         return step;
     }
